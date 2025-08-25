@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* فونت فارسی 
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');*/
+
+/* فونت سفارشی */
+@font-face {
+  font-family: "MyCustomFont", "Times New Roman";
+  src: url("/webfonts/Vazirmatn-ExtraBold.woff2") format("woff2"),
+       url("/webfonts/Vazirmatn-Light.woff") format("woff");
+  font-weight: 700 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root{
+  --gold: #D4AF37;
+  --bg-dark: #0b0b0b;
+  --card-dark: #121212;
+  --muted: #bfbfbf;
+}
+
+html, body {
+  height: 100%;
+
+  font-family: "MyCustomFont";
+  background-color: #121212; /* پس‌زمینه مشکی/خاکستری */
+  color: #FFD700; /* متن طلایی */
+  margin: 0;
+  padding: 0;
+  direction: rtl; /* راست‌چین */
+}
+
+a{color: var(--gold); text-decoration: none;}
+a:hover{text-decoration: underline;}
+
+
+button {
+  background-color: #FFD700;
+  color: #121212;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background-color: #e6c200;
+}
+
+input {
+  background: #1e1e1e;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+
+.input::placeholder { color: rgba(212,175,55,0.5); }
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(212,175,55,0.06);
+  border-color: var(--gold);
+}
+
+.card {
+  background: #1e1e1e;
+  border: 1px solid #FFD700;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* ورودی‌ها: عرض محدود (inputs کوچکتر از کارت) */
+.form-inner {
+  width: 100%;
+  max-width: 20rem; /* INPUT WIDTH: ~320px */
+  margin: 0 auto;
+}
+
+/* دکمه: هم عرض INPUT */
+.btn {
+  display: block;
+  width: 100%;
+  max-width: 20rem; /* same as inputs */
+  margin: 0.5rem auto 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--gold);
+  color: var(--bg-dark);
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.12s ease, opacity 0.12s;
+}
+
+.btn:hover { transform: translateY(-2px); opacity: 0.95; }
+
+.header {
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(212,175,55,0.06);
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.brand { font-weight: 800; font-size: 18px; color: var(--gold); }
+
+/* responsive tweaks */
+@media (max-width: 640px) {
+  .form-inner { max-width: 18rem; } /* smaller on phones */
+  .card { padding: 14px; border-radius: 10px; }
+}
