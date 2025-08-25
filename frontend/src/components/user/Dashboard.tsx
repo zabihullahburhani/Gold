@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
-import Header from "../shared/Header";
-import Footer from "../shared/Footer";
-import Sidebar from "../shared/Sidebar";
+import Header from "../Header";
+import Sidebar from "../Sidebar";
 
 // کامپوننت‌های یوزر
 import Customers from "./Customers";
@@ -40,7 +39,7 @@ export default function UserDashboard() {
           {renderComponent()}
         </main>
       </div>
-      <Footer />
+    
     </div>
   );
 }

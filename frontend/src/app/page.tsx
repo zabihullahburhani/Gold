@@ -1,17 +1,58 @@
-import Link from "next/link";
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function HomePage() {
+export default function LoginPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (role === "admin") {
+      router.push("/admin/dashboard");
+    } else {
+      router.push("/user/dashboard");
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-[70vh] p-6">
-      <div className="card text-center" style={{ maxWidth: 720 }}>
-        <h1 style={{ fontSize: 22, marginBottom: 10 }}>به پنل GJBMS خوش آمدید</h1>
-        <p style={{ color: "rgba(212,175,55,0.85)" }}>برای ورود به سیستم از لینک زیر استفاده کنید</p>
-        <div style={{ marginTop: 18 }}>
-          <Link href="/login" className="btn" role="button">
-            برو به صفحه ورود
-          </Link>
-        </div>
-      </div>
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-8 rounded-xl shadow-md w-96 space-y-4"
+      >
+        <h2 className="text-2xl font-bold text-center">Login</h2>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="w-full border p-2 rounded"
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+        >
+          Login
+        </button>
+      </form>
     </div>
   );
 }

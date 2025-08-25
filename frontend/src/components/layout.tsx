@@ -1,11 +1,12 @@
 import "./globals.css";
-import  Header  from "../components/Header";
-import  Sidebar  from "../components/Sidebar";
-import  Footer  from "../components/Footer";
+import { Header } from "@/components/Header";
+import { Sidebar } from "@/components/Sidebar";
+import { Footer } from "@/components/Footer";
+import { dir } from "console";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fa"  dir="rtl">
       <body>
         <div className="flex min-h-screen">
           <Sidebar />

@@ -1,10 +1,9 @@
-
 "use client";
 
-export default function GoldPrices() {
+export default function Employees() {
   return (
     <div>
-      <h2>Gold price</h2>
+      <h2>Employees</h2>
       <p>این بخش مربوط به مدیریت کارکنان است.</p>
     </div>
   );
