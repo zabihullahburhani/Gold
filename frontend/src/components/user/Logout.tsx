@@ -1,10 +1,25 @@
 "use client";
 
+import React from "react";
+import { useRouter } from "next/navigation";
+
 export default function Logout() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // در پروژه واقعی: توکن را پاک کن، سشن را ببند و غیره
+    console.log("خروج انجام شد");
+
+    // ری‌دایرکت به صفحه ورود
+    router.push("/");
+  };
+
   return (
-    <div>
-      <Link href="/">Logout</Link>
-      <p>این بخش مربوط به مدیریت کارکنان است.</p>
-    </div>
+    <button
+      onClick={handleLogout}
+      className="block w-full text-right mt-4 text-yellow-300 hover:text-yellow-500"
+    >
+      خروج  
+    </button>
   );
 }

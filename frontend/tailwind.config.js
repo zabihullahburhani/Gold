@@ -1,17 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./src/components/**/*.{ts,tsx,js,jsx}"
+    "./src/app/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx}"
   ],
- theme: {
+
+theme: {
     extend: {
       colors: {
-        gold: "#D4AF37",
-        "bg-dark": "#0b0b0b",
-        "card-dark": "#121212"
-      }
-    }
+        gold: {
+          400: "#d4af37", // رنگ طلایی برای متن
+        },
+        darkbg: "#1a1a1a", // رنگ عقب کمی سیاه
+      },
+      fontFamily: {
+        vazir: ["Vazir", "sans-serif"], // فونت فارسی دلخواه
+      },
+    },
   },
-  plugins: []
-}
+  plugins: [],
+};

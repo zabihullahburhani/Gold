@@ -1,20 +1,34 @@
-import "./globals.css";
-import  Header  from "../components/Header";
-import  Sidebar  from "../components/Sidebar";
-import  Footer  from "../components/Footer";
+// مسیر: frontend/src/app/layout.tsx
+import './globals.css';
+import { ReactNode } from 'react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Sidebar from 'components/Sidebar';
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  title: 'GJBMS System',
+  description: 'Gold & Shop Management System',
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <div className="flex-1 flex flex-col">
+    <html lang="fa" dir="rtl">
+      <body className="min-h-screen">
+        <header className="header">
+          <div className="header-inner">
+            <div className="brand">GJBMS</div>
             <Header />
-            <main className="flex-1 p-6">{children}</main>
-            <Footer />
           </div>
-        </div>
+        </header>
+
+        <main style={{ minHeight: "calc(100vh - 140px)" }}>
+          {children}
+        </main>
+        
+
+        <footer style={{ padding: 16 }}>
+          <Footer />
+        </footer>
       </body>
     </html>
   );
