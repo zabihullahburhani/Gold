@@ -1,0 +1,43 @@
+backend/
+├── app/
+│   ├── api/
+│   │   └── v1/
+│   │       ├── auth.py          # مسیرهای احراز هویت: login، ثبت‌نام، توکن JWT
+│   │       └── users.py         # مسیرهای مدیریت کاربران: CRUD، تغییر نقش، پروفایل و عکس
+│   │       └── customers.py     # مسیرهای مدیریت مشتریان
+│   │       └── transactions.py  # مسیرهای تراکنش‌ها
+│   │       └── shop.py          # مسیرهای گزارشات، مصارف دوکان، موجودی، طلا
+│   │       └── notifications.py # مسیرهای نوتفیکیشن‌ها
+│
+│   ├── core/
+│   │   ├── config.py            # تنظیمات عمومی (env, secret keys, DB URL)
+│   │   ├── database.py          # اتصال به SQLite / SessionLocal / Base
+│   │   └── security.py          # JWT Token، Hashing پسورد، get_current_user
+│
+│   ├── crud/
+│   │   ├── user.py              # CRUD کارمندان و login
+│   │   ├── customer.py          # CRUD مشتریان
+│   │   ├── transaction.py       # CRUD تراکنش‌ها
+│   │   ├── shop.py              # CRUD موجودی، مصارف، طلا
+│   │   └── notification.py      # CRUD نوتفیکیشن‌ها
+│
+│   ├── models/
+│   │   ├── user.py              # Employee + Login
+│   │   ├── customer.py          # Customer
+│   │   ├── transaction.py       # Transaction
+│   │   ├── shop.py              # ShopExpenses, ShopBalance, GoldTypes, GoldRates, ShopAssets
+│   │   └── notification.py      # Notifications, UserProfiles
+│
+│   ├── schemas/
+│   │   ├── user.py              # Pydantic: EmployeeCreate, EmployeeOut, EmployeeUpdate, Login schemas
+│   │   ├── customer.py          # Customer schemas
+│   │   ├── transaction.py       # Transaction schemas
+│   │   ├── shop.py              # Shop-related schemas
+│   │   └── notification.py      # Notification schemas
+│
+│   └── main.py                  # FastAPI app: include_router برای تمام مسیرها، middleware و startup events
+│
+├── alembic/                      # Migration دیتابیس
+├── alembic.ini
+├── requirements.txt
+└── .env

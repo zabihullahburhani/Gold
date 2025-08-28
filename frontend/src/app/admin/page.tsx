@@ -1,3 +1,11 @@
+// frontend/src/app/admin/page.tsx
+// This is the main admin page with cards for different sections.
+// Added CreateUser to the map for employee management.
+// Created by: Professor Zabihullah Burhani
+// ICT and AI and Robotics Specialist
+// Phone: 0705002913, Email: zabihullahburhani@gmail.com
+// Address: Takhar University, Computer Science Faculty.
+
 "use client";
 
 import { useState } from "react";
@@ -16,12 +24,12 @@ import DatabaseSettings from "../../components/admin/DatabaseSettings";
 import Settings from "../../components/admin/Settings";
 import Logout from "../../components/admin/Logout";
 
-// --- مپ کارت‌ها: کلید، عنوان فارسی و آیکون ---
+// Map of components with titles and icons
 const componentsMap: any = {
-  dashboard: { title: "📊  صفحه دشبورد", component: Dashboard },
+  dashboard: { title: "📊 صفحه دشبورد", component: Dashboard },
   customers: { title: "👥 مدیریت مشتریان", component: Customers },
   employees: { title: "🏢 کارمندان", component: Employees },
-   createuser: { title: "➕ ایجاد یوزر", component: CreateUser }, // 👈 این خط جدید
+  createuser: { title: "➕ ایجاد یوزر", component: CreateUser },
   goldprices: { title: "💰 قیمت طلا", component: GoldPrices },
   transactions: { title: "📊 تراکنش‌ها", component: Transactions },
   reports: { title: "📑 گزارش‌ها", component: Reports },
@@ -36,21 +44,17 @@ const componentsMap: any = {
 export default function AdminPage() {
   const [active, setActive] = useState<string | null>(null);
 
-  // --- حالت نمایش جزئیات یک کارت ---
   if (active) {
     const ActiveComponent = componentsMap[active].component;
     return (
       <div className="min-h-screen bg-gray-900 text-white p-6">
-        {/* دکمه بازگشت */}
         <button
           onClick={() => setActive(null)}
           className="mb-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-2 rounded-lg shadow"
         >
           ← بازگشت
         </button>
-
         <div className="grid grid-cols-4 gap-4">
-          {/* سایدبار کارت‌ها */}
           <div className="col-span-1 space-y-2">
             {Object.keys(componentsMap).map((key) => (
               <button
@@ -66,8 +70,6 @@ export default function AdminPage() {
               </button>
             ))}
           </div>
-
-          {/* محتوای اصلی کارت */}
           <div className="col-span-3 bg-gray-800 rounded-xl p-6 shadow-lg">
             <ActiveComponent />
           </div>
@@ -76,8 +78,7 @@ export default function AdminPage() {
     );
   }
 
-  // --- حالت صفحه اصلی (نمایش کارت‌ها) ---
-    return (
+  return (
     <div className="min-h-screen bg-gray-900 text-white p-10 grid grid-cols-3 gap-6">
       {Object.keys(componentsMap).map((key) => (
         <AdminCard key={key} title={componentsMap[key].title} onClick={() => setActive(key)} />
@@ -85,6 +86,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-
-

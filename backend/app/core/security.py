@@ -1,20 +1,19 @@
-from datetime import datetime, timedelta
-from typing import Optional
+# backend/app/core/security.py
+# Security functions.
+# No changes needed.
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any
+
 from jose import jwt, JWTError
 from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 
-from sqlalchemy.orm import Session
-from app.core.config import settings
-from app.core.database import get_db
-from app.crud.user import get_login_by_username
-from app.models.user import Login
+from app.core import config
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")  # برای /docs
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -22,33 +21,25 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
-def create_access_token(data: dict, expires_minutes: Optional[int] = None) -> str:
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=expires_minutes or settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+def create_access_token(claims: Dict[str, Any], expires_minutes: Optional[int] = None) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=expires_minutes or config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode = {**claims, "exp": expire}
+    return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> Login:
-    credentials_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def decode_token(token: str):
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        username: str = payload.get("sub")
-        if not username:
-            raise credentials_exc
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        return payload
     except JWTError:
-        raise credentials_exc
+        return None
 
-    user = get_login_by_username(db, username)
-    if not user:
-        raise credentials_exc
-    return user  # مدل Login شامل رابطه employee
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = decode_token(token)
+    if not payload or "sub" not in payload or "role" not in payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    return {"username": payload["sub"], "role": payload["role"]}
 
-def require_admin(current: Login = Depends(get_current_user)) -> Login:
-    role = current.employee.role if current.employee else None
-    if role != "admin":
-        raise HTTPException(status_code=403, detail="Admin privileges required")
-    return current
+def require_admin(user=Depends(get_current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+    return user

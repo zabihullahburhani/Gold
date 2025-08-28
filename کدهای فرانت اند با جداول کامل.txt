@@ -1,0 +1,595 @@
+ساختار دیتابیس و جداول
+backend/backend.db
+
+CREATE TABLE employees (
+        employee_id INTEGER NOT NULL,
+        full_name VARCHAR NOT NULL,
+        role VARCHAR NOT NULL,
+        phone VARCHAR,
+        created_at DATETIME, profile_pic TEXT,
+        PRIMARY KEY (employee_id)
+);
+
+CREATE INDEX ix_employees_employee_id ON employees (employee_id);
+CREATE TABLE logins (
+        login_id INTEGER NOT NULL,
+        employee_id INTEGER,
+        username VARCHAR NOT NULL,
+        password_hash VARCHAR NOT NULL,
+        last_login DATETIME,
+        PRIMARY KEY (login_id),
+        FOREIGN KEY(employee_id) REFERENCES employees (employee_id)
+);
+
+CREATE UNIQUE INDEX ix_logins_username ON logins (username);
+CREATE INDEX ix_logins_login_id ON logins (login_id);
+CREATE TABLE customers (
+    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    phone TEXT,
+    address TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE shop_expenses (
+    expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    expense_type TEXT NOT NULL,
+    amount REAL NOT NULL,
+    expense_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    employee_id INTEGER,
+    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
+);
+
+CREATE TABLE shop_balance (
+    balance_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gold_balance_grams REAL DEFAULT 0,
+    cash_balance_usd REAL DEFAULT 0,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE gold_types (
+    gold_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE gold_rates (
+    rate_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gold_type_id INTEGER NOT NULL,
+    rate_per_gram REAL NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id)
+);
+
+CREATE TABLE transactions (
+    txn_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER NOT NULL,
+    employee_id INTEGER NOT NULL,
+    gold_type_id INTEGER NOT NULL,
+    grams REAL NOT NULL,
+    rate_per_gram REAL NOT NULL,
+    total_usd REAL NOT NULL,
+    txn_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    FOREIGN KEY(customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY(employee_id) REFERENCES employees(employee_id),
+    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id)
+);
+
+CREATE TABLE notifications (
+    notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
+);
+
+CREATE TABLE user_profiles (
+    profile_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    picture_url TEXT, -- می‌تواند مسیر فایل یا URL باشد
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
+);
+
+CREATE TABLE shop_assets (
+    asset_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL, -- "logo" or "banner"
+    file_url TEXT NOT NULL,
+    uploaded_by INTEGER,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(uploaded_by) REFERENCES employees(employee_id)
+);
+
+
+// frontend/src/services/api.ts
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+// ورود (Login)
+export async function login(username: string, password: string) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+// ایجاد کارمند/کاربر جدید با پشتیبانی از آپلود عکس
+export async function createUser(user: {
+  full_name: string;
+  username: string;
+  password: string;
+  role: string;
+  phone?: string;
+  profile_pic?: File;
+}) {
+  const token = localStorage.getItem("token");
+  
+  const formData = new FormData();
+  formData.append("full_name", user.full_name);
+  formData.append("username", user.username);
+  formData.append("password", user.password);
+  formData.append("role", user.role);
+  if (user.phone) formData.append("phone", user.phone);
+  if (user.profile_pic) formData.append("profile_pic", user.profile_pic);
+
+  const res = await fetch(`${API_BASE}/users/`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`, // فقط توکن JWT اضافه می‌شود
+    },
+    body: formData,
+  });
+
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+// گرفتن لیست کارمندان
+export async function fetchEmployees() {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_BASE}/users/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+// ویرایش کارمند
+export async function updateEmployee(
+  id: number,
+  payload: {
+    full_name?: string;
+    username?: string;
+    password?: string;
+    role?: string;
+    phone?: string;
+    profile_pic?: File | null;
+  }
+) {
+  const token = localStorage.getItem("token");
+
+  const formData = new FormData();
+  if (payload.full_name) formData.append("full_name", payload.full_name);
+  if (payload.username) formData.append("username", payload.username);
+  if (payload.password) formData.append("password", payload.password);
+  if (payload.role) formData.append("role", payload.role);
+  if (payload.phone) formData.append("phone", payload.phone);
+  if (payload.profile_pic) formData.append("profile_pic", payload.profile_pic);
+
+  const res = await fetch(`${API_BASE}/users/${id}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+// حذف کارمند
+export async function deleteEmployee(id: number) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_BASE}/users/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+
+// created by: professor zabihullah burhani
+// ICT and AI and Robotics متخصص
+// phone: 0705002913, email: zabihullahburhani@gmail.com
+// Address: Takhar University, COmputer science faculty.
+
+
+
+// frontend/src/app/admin/page.tsx
+"use client";
+
+import { useState } from "react";
+import CreateUser from "../../components/admin/CreateUser";
+import AdminCard from "../../components/admin/AdminCard";
+import Dashboard from "../../components/admin/Dashboard";
+import Customers from "../../components/admin/Customers";
+import Employees from "../../components/admin/Employees";
+import GoldPrices from "../../components/admin/GoldPrices";
+import Transactions from "../../components/admin/Transactions";
+import Reports from "../../components/admin/Reports";
+import GoldRateDifferences from "../../components/admin/GoldRateDifferences";
+import ShopExpenses from "../../components/admin/ShopExpenses";
+import AppActivation from "../../components/admin/AppActivation";
+import DatabaseSettings from "../../components/admin/DatabaseSettings";
+import Settings from "../../components/admin/Settings";
+import Logout from "../../components/admin/Logout";
+
+// --- مپ کارت‌ها: کلید، عنوان فارسی و آیکون ---
+const componentsMap: any = {
+  dashboard: { title: "📊  صفحه دشبورد", component: Dashboard },
+  customers: { title: "👥 مدیریت مشتریان", component: Customers },
+  employees: { title: "🏢 کارمندان", component: Employees },
+   createuser: { title: "➕ ایجاد یوزر", component: CreateUser }, // 👈 این خط جدید
+  goldprices: { title: "💰 قیمت طلا", component: GoldPrices },
+  transactions: { title: "📊 تراکنش‌ها", component: Transactions },
+  reports: { title: "📑 گزارش‌ها", component: Reports },
+  goldratediff: { title: "📉 تفاوت نرخ طلا", component: GoldRateDifferences },
+  expenses: { title: "💵 هزینه‌ها", component: ShopExpenses },
+  appactivation: { title: "🔑 فعال‌سازی اپلیکیشن", component: AppActivation },
+  dbsettings: { title: "🗄 تنظیمات دیتابیس", component: DatabaseSettings },
+  settings: { title: "⚙️ تنظیمات", component: Settings },
+  logout: { title: "🚪 خروج", component: Logout },
+};
+
+export default function AdminPage() {
+  const [active, setActive] = useState<string | null>(null);
+
+  // --- حالت نمایش جزئیات یک کارت ---
+  if (active) {
+    const ActiveComponent = componentsMap[active].component;
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-6">
+        {/* دکمه بازگشت */}
+        <button
+          onClick={() => setActive(null)}
+          className="mb-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-2 rounded-lg shadow"
+        >
+          ← بازگشت
+        </button>
+
+        <div className="grid grid-cols-4 gap-4">
+          {/* سایدبار کارت‌ها */}
+          <div className="col-span-1 space-y-2">
+            {Object.keys(componentsMap).map((key) => (
+              <button
+                key={key}
+                onClick={() => setActive(key)}
+                className={`block w-[200px] p-3 rounded-lg text-right font-bold transition ${
+                  active === key
+                    ? "bg-yellow-600 text-black"
+                    : "bg-yellow-400 text-black hover:bg-yellow-500"
+                }`}
+              >
+                {componentsMap[key].title}
+              </button>
+            ))}
+          </div>
+
+          {/* محتوای اصلی کارت */}
+          <div className="col-span-3 bg-gray-800 rounded-xl p-6 shadow-lg">
+            <ActiveComponent />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- حالت صفحه اصلی (نمایش کارت‌ها) ---
+    return (
+    <div className="min-h-screen bg-gray-900 text-white p-10 grid grid-cols-3 gap-6">
+      {Object.keys(componentsMap).map((key) => (
+        <AdminCard key={key} title={componentsMap[key].title} onClick={() => setActive(key)} />
+      ))}
+    </div>
+  );
+}
+
+
+// frontend/src/components/admin/Employees.tsx
+
+"use client";
+
+import { useState, useEffect } from "react";
+import CreateUser from "./CreateUser"; // فرم ایجاد/ویرایش کارمند
+import { Card, CardHeader, CardContent } from "./ui/card";
+import { API_BASE } from "../../services/api";
+
+interface Employee {
+  employee_id: number;
+  full_name: string;
+  role: string;
+  phone?: string;
+  username: string;
+  profile_pic?: string;
+}
+
+export default function Employees() {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+
+  // گرفتن لیست کارمندان از دیتابیس
+  const fetchEmployees = async () => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/users/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (res.ok) setEmployees(data);
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("آیا مطمئن هستید می‌خواهید حذف کنید؟")) return;
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setEmployees(employees.filter((e) => e.employee_id !== id));
+    } else {
+      alert("❌ خطا در حذف کارمند");
+    }
+  };
+
+  const handleEdit = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setShowCreate(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingEmployee(null);
+    setShowCreate(false);
+  };
+
+  return (
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">👨‍💼 مدیریت کارمندان</h1>
+
+      <button
+        onClick={() => {
+          setShowCreate(!showCreate);
+          setEditingEmployee(null);
+        }}
+        className="mb-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
+        {showCreate ? "❌ بستن فرم" : "➕ افزودن کارمند"}
+      </button>
+
+      {showCreate && (
+        <CreateUser
+          employee={editingEmployee || undefined}
+          onSuccess={() => { setShowCreate(false); fetchEmployees(); }}
+          onCancel={editingEmployee ? handleCancelEdit : undefined}
+        />
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {employees.map((emp) => (
+          <Card key={emp.employee_id}>
+            <CardHeader>{emp.full_name}</CardHeader>
+            <CardContent>
+              {emp.profile_pic && (
+                <img src={emp.profile_pic} alt="Profile" className="w-16 h-16 rounded-full mb-2" />
+              )}
+              <p>ایمیل/نام کاربری: {emp.username}</p>
+              <p>سمت: {emp.role}</p>
+              <p>تلفن: {emp.phone}</p>
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => handleEdit(emp)}
+                  className="px-3 py-1 rounded-lg bg-blue-500 text-white"
+                >
+                  ویرایش
+                </button>
+                <button
+                  onClick={() => handleDelete(emp.employee_id)}
+                  className="px-3 py-1 rounded-lg bg-red-500 text-white"
+                >
+                  حذف
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
+// created by: professor zabihullah burhani
+// ICT and AI and Robotics متخصص
+// phone: 0705002913, email: zabihullahburhani@gmail.com
+// Address: Takhar University, COmputer science faculty.
+
+
+//frontend/src/components/admin/CreateUser.tsx
+
+"use client";
+
+import { useState, useEffect } from "react";
+import { API_BASE } from "../../services/api";
+
+interface Props {
+  onSuccess?: () => void;
+  employee?: {
+    employee_id: number;
+    full_name: string;
+    username: string;
+    role: string;
+    phone?: string;
+    profile_pic?: string;
+  };
+  onCancel?: () => void; // برای حالت ویرایش
+}
+
+export default function CreateUser({ onSuccess, employee, onCancel }: Props) {
+  const [full_name, setFullName] = useState(employee?.full_name || "");
+  const [username, setUsername] = useState(employee?.username || "");
+  const [password, setPassword] = useState(""); // فقط برای تغییر رمز
+  const [role, setRole] = useState(employee?.role || "user");
+  const [phone, setPhone] = useState(employee?.phone || "");
+  const [profile_pic, setProfilePic] = useState<File | null>(null);
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("full_name", full_name);
+    formData.append("username", username);
+    if (password) formData.append("password", password); // رمز فقط اگر وارد شده
+    formData.append("role", role);
+    formData.append("phone", phone);
+    if (profile_pic) formData.append("profile_pic", profile_pic);
+
+    let res;
+    if (employee) {
+      // حالت ویرایش
+      res = await fetch(`${API_BASE}/users/${employee.employee_id}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+    } else {
+      // حالت ایجاد
+      res = await fetch(`${API_BASE}/users/`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+    }
+
+    const data = await res.json();
+    if (res.ok) {
+      alert(employee ? "✅ کارمند ویرایش شد!" : "✅ کارمند جدید ساخته شد!");
+      setFullName(""); setUsername(""); setPassword(""); setPhone(""); setProfilePic(null);
+      if (onSuccess) onSuccess();
+    } else {
+      alert(data.detail || "❌ خطا در عملیات");
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-md text-black mb-4">
+      <h2 className="text-lg font-bold mb-4">
+        {employee ? "✏️ ویرایش کارمند" : "➕ ایجاد کارمند جدید"}
+      </h2>
+
+      <input
+        type="text"
+        placeholder="نام کامل"
+        value={full_name}
+        onChange={(e) => setFullName(e.target.value)}
+        className="w-full mb-2 px-3 py-2 border rounded"
+      />
+      <input
+        type="text"
+        placeholder="نام کاربری"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        className="w-full mb-2 px-3 py-2 border rounded"
+        disabled={!!employee} // در حالت ویرایش نام کاربری تغییر نکند
+      />
+      <input
+        type="password"
+        placeholder={employee ? "رمز عبور (اختیاری)" : "رمز عبور"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="w-full mb-2 px-3 py-2 border rounded"
+      />
+      <input
+        type="text"
+        placeholder="شماره تماس"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        className="w-full mb-2 px-3 py-2 border rounded"
+      />
+      <select
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+        className="w-full mb-2 px-3 py-2 border rounded"
+      >
+        <option value="user">کارمند</option>
+        <option value="admin">ادمین</option>
+      </select>
+      <input
+        type="file"
+        onChange={(e) => setProfilePic(e.target.files?.[0] || null)}
+        className="mb-3"
+      />
+
+      <div className="flex gap-2">
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded"
+        >
+          {employee ? "ویرایش کارمند" : "ثبت کارمند"}
+        </button>
+        {employee && onCancel && (
+          <button
+            onClick={onCancel}
+            className="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 rounded"
+          >
+            ❌ لغو
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
+// created by: professor zabihullah burhani
+// ICT and AI and Robotics متخصص
+// phone: 0705002913, email: zabihullahburhani@gmail.com
+// Address: Takhar University, COmputer science faculty.
+
+// frontend/src/components/admin/ui/card.tsx
+
+import React from "react";
+
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function Card({ children, className }: CardProps) {
+  return (
+    <div className={`rounded-2xl shadow-md border p-4 bg-white ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+export function CardHeader({ children }: { children: React.ReactNode }) {
+  return <div className="mb-2 font-bold text-lg">{children}</div>;
+}
+
+export function CardContent({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
+}
+
+

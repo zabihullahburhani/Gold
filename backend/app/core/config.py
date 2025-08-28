@@ -1,10 +1,13 @@
-from pydantic_settings import BaseSettings
+# backend/app/core/config.py
+# Configuration settings.
+# No changes needed.
 
-class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./backend.db"
-    SECRET_KEY: str = "supersecretkey_change_me"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+import os
 
-settings = Settings()
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+DB_FILE = os.path.join(BASE_DIR, "..", "backend.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_FILE}")
+
+SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey_change_me")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
