@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { FiBell } from "react-icons/fi";
+//import { FiBell } from "react-icons/fi";
 
 interface Notification {
   id: number;
@@ -53,13 +53,8 @@ export default function Notifications() {
         className="relative p-1.5 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"
         onClick={() => setOpen(!open)}
       >
-        <FiBell size={20} className="text-gold-400" />
-        {/* تعداد اعلان‌های خوانده نشده */}
-        {notifications.filter((n) => !n.read).length > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-            {notifications.filter((n) => !n.read).length}
-          </span>
-        )}
+
+   
       </button>
 
       {/* Popover */}

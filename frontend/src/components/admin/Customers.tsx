@@ -1,151 +1,55 @@
-// src/components/admin/Customers.tsx
 "use client";
+import { useState } from "react";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { api } from "@/services/api";
-
-interface Customer {
-  id: number;
-  name: string;
-  phone: string;
-  address: string;
-}
+const sampleCustomers = [
+  { id: 1, fullName: "احمد احمدی", phone: "0700000000", address: "کابل" },
+  { id: 2, fullName: "زهرا حسینی", phone: "0791111111", address: "هرات" },
+];
 
 export default function Customers() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<Customer>>({});
+  const [customers, setCustomers] = useState(sampleCustomers);
 
-  // دریافت لیست مشتریان
-  const fetchCustomers = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/customers/");
-      setCustomers(res.data);
-    } catch (err) {
-      console.error("Error fetching customers:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  // اضافه یا ویرایش مشتری
-  const handleSave = async () => {
-    try {
-      if (formData.id) {
-        // ویرایش
-        await api.put(`/customers/${formData.id}`, formData);
-      } else {
-        // اضافه کردن
-        await api.post("/customers/", formData);
-      }
-      setOpen(false);
-      setFormData({});
-      fetchCustomers();
-    } catch (err) {
-      console.error("Error saving customer:", err);
-    }
-  };
-
-  // حذف مشتری
-  const handleDelete = async (id: number) => {
-    try {
-      await api.delete(`/customers/${id}`);
-      fetchCustomers();
-    } catch (err) {
-      console.error("Error deleting customer:", err);
+  const handleDelete = (id: number) => {
+    if(confirm("آیا مطمئن هستید می‌خواهید حذف کنید؟")) {
+      setCustomers(customers.filter(c => c.id !== id));
     }
   };
 
   return (
-    <Card className="p-4">
-      <CardHeader className="flex justify-between items-center">
-        <CardTitle>مدیریت مشتریان</CardTitle>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setFormData({})}>➕ مشتری جدید</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{formData.id ? "ویرایش مشتری" : "اضافه کردن مشتری"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <Input
-                placeholder="نام مشتری"
-                value={formData.name || ""}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-              <Input
-                placeholder="شماره تماس"
-                value={formData.phone || ""}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              />
-              <Input
-                placeholder="آدرس"
-                value={formData.address || ""}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              />
-              <Button onClick={handleSave}>💾 ذخیره</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p>در حال بارگذاری...</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>آی‌دی</TableHead>
-                <TableHead>نام</TableHead>
-                <TableHead>شماره تماس</TableHead>
-                <TableHead>آدرس</TableHead>
-                <TableHead>عملیات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {customers.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell>{customer.id}</TableCell>
-                  <TableCell>{customer.name}</TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>{customer.address}</TableCell>
-                  <TableCell className="space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setFormData(customer);
-                        setOpen(true);
-                      }}
-                    >
-                      ✏️ ویرایش
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(customer.id)}
-                    >
-                      🗑 حذف
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+    <div>
+      <h1 className="text-2xl font-bold mb-4">👥 مدیریت مشتریان</h1>
+
+      <button className="mb-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+        ➕ افزودن مشتری
+      </button>
+
+      <div className="overflow-x-auto">
+        <table className="w-full bg-white rounded shadow overflow-hidden">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="p-2">ID</th>
+              <th className="p-2">نام کامل</th>
+              <th className="p-2">شماره تماس</th>
+              <th className="p-2">آدرس</th>
+              <th className="p-2">عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map(c => (
+              <tr key={c.id} className="border-t">
+                <td className="p-2">{c.id}</td>
+                <td className="p-2">{c.fullName}</td>
+                <td className="p-2">{c.phone}</td>
+                <td className="p-2">{c.address}</td>
+                <td className="p-2 space-x-2">
+                  <button className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">ویرایش</button>
+                  <button onClick={() => handleDelete(c.id)} className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">حذف</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
