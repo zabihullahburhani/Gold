@@ -1,71 +1,75 @@
-# backend/app/crud/user.py
-# CRUD operations.
-# No major changes, but ensure profile_pic is handled as str (file path).
-
+# path: backend/app/crud/user.py
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from app.models.user import Employee, Login
-from app.schemas.user import EmployeeCreate, EmployeeUpdate
 from app.core.security import hash_password
-from datetime import datetime
 
-def create_employee(db: Session, emp: EmployeeCreate):
-    new_emp = Employee(
-        full_name=emp.full_name,
-        role=emp.role,
-        phone=emp.phone,
-        profile_pic=emp.profile_pic,
-        created_at=datetime.utcnow()
-    )
-    db.add(new_emp)
-    db.commit()
-    db.refresh(new_emp)
+def get_login_by_username(db: Session, username: str) -> Login | None:
+    return db.execute(select(Login).where(Login.username == username)).scalar_one_or_none()
 
-    login = Login(
-        employee_id=new_emp.employee_id,
-        username=emp.username,
-        password_hash=hash_password(emp.password)
-    )
+def create_employee(db: Session, full_name: str, role: str, phone: str | None, username: str, password: str, profile_pic: str | None = None) -> Employee:
+    employee = Employee(full_name=full_name, role=role, phone=phone, profile_pic=profile_pic)
+    db.add(employee)
+    db.flush()  # get employee_id before commit
+
+    login = Login(employee_id=employee.employee_id, username=username, password_hash=hash_password(password))
     db.add(login)
     db.commit()
+    db.refresh(employee)
     db.refresh(login)
+    return employee
 
-    return new_emp
+def list_users(db: Session) -> list[Login]:
+    # برمی‌گرداند لاگین‌ها به همراه employee برای دسترسی به username/role/...
+    return db.execute(select(Login)).scalars().all()
 
-def get_employees(db: Session):
-    return db.query(Employee).all()
+def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
+    return db.get(Employee, employee_id)
 
-def get_employee(db: Session, employee_id: int):
-    return db.query(Employee).filter(Employee.employee_id == employee_id).first()
+def update_employee(db: Session, employee_id: int, *, full_name=None, role=None, phone=None, password=None, profile_pic_path=None) -> Employee | None:
+    employee = get_employee_by_id(db, employee_id)
+    if not employee:
+        return None
+    if full_name is not None:
+        employee.full_name = full_name
+    if role is not None:
+        employee.role = role
+    if phone is not None:
+        employee.phone = phone
+    if profile_pic_path is not None:
+        employee.profile_pic = profile_pic_path
+    if password:
+        if not employee.login:
+            # اگر به هر دلیل login نداشت
+            login = Login(employee_id=employee.employee_id, username=f"user{employee.employee_id}", password_hash=hash_password(password))
+            db.add(login)
+        else:
+            employee.login.password_hash = hash_password(password)
 
-def update_employee(db: Session, employee_id: int, data: EmployeeUpdate):
-    emp = get_employee(db, employee_id)
+    db.commit()
+    db.refresh(employee)
+    return employee
+
+def delete_employee(db: Session, employee_id: int) -> bool:
+    emp = get_employee_by_id(db, employee_id)
+    if not emp:
+        return False
+    if emp.login:
+        db.delete(emp.login)
+    db.delete(emp)
+    db.commit()
+    return True
+
+def change_role(db: Session, employee_id: int, new_role: str) -> Employee | None:
+    emp = get_employee_by_id(db, employee_id)
     if not emp:
         return None
-    if data.full_name is not None:
-        emp.full_name = data.full_name
-    if data.role is not None:
-        emp.role = data.role
-    if data.phone is not None:
-        emp.phone = data.phone
-    if data.profile_pic is not None:
-        emp.profile_pic = data.profile_pic  # Update with new file path
+    emp.role = new_role
     db.commit()
     db.refresh(emp)
     return emp
 
-def delete_employee(db: Session, employee_id: int):
-    emp = get_employee(db, employee_id)
-    if not emp:
-        return None
-    login = db.query(Login).filter(Login.employee_id == employee_id).first()
-    if login:
-        db.delete(login)
-    db.delete(emp)
-    db.commit()
-    return emp
-
-def get_employee_by_username(db: Session, username: str):
-    return db.query(Employee).join(Login).filter(Login.username == username).first()
-
-def get_login_by_username(db: Session, username: str):
-    return db.query(Login).filter(Login.username == username).first()
+# created by: professor zabihullah burhani
+# ICT and AI and Robotics متخصص
+# phone: 0705002913, email: zabihullahburhani@gmail.com
+# Address: Takhar University, COmputer science faculty.

@@ -1,0 +1,31 @@
+routes:
+1-- backend/app/core/security.py
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
+2--- backend/app/api/v1/auth.py
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+3--  backend/app/api/v1/users.py
+     
+router = APIRouter(prefix="/users", tags=["users"])
+    
+
+4-- frontend/src/services/api.ts
+//Login
+const res = await fetch(`${API_BASE}/api/v1/auth/login`
+// Create new employee
+const res = await fetch(`${API_BASE}/api/v1/users`
+// Fetch list of employees
+const res = await fetch(`${API_BASE}/api/v1/users
+// Update employee
+  const res = await fetch(`${API_BASE}/api/v1/users/${id}`
+// Delete employee
+ const res = await fetch(`${API_BASE}/api/v1/users/${id}`
+ 
+ 
+5-- backend/app/main.py
+# API v1
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")

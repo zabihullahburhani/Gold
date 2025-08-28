@@ -1,104 +1,132 @@
-# backend/app/api/v1/users.py
-# This file handles CRUD operations for employees.
-# Added support for file upload (profile_pic) using UploadFile.
-# Full paths are /api/v1/employees for consistency.
-# Removed duplicate login endpoint.
-# Created by: Professor Zabihullah Burhani
-# ICT and AI and Robotics Specialist
-# Phone: 0705002913, Email: zabihullahburhani@gmail.com
-# Address: Takhar University, Computer Science Faculty.
-
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+# path: backend/app/api/v1/users.py
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-import os
-from datetime import datetime
+from typing import List, Optional
+import os, shutil
 
-from app.schemas.user import EmployeeCreate, EmployeeUpdate, EmployeeOut
-from app.crud.user import create_employee, get_employees, get_employee, update_employee, delete_employee
 from app.core.database import get_db
-from app.core.security import require_admin  # Optional for admin-only access
+from app.core.security import get_current_user, require_admin
+from app.schemas.user import EmployeeOut
+from app.crud.user import list_users, create_employee, update_employee, delete_employee, change_role
 
-router = APIRouter( tags=["Employees"])  # Prefix /employees, full path /api/v1/employees
+router = APIRouter(prefix="/users", tags=["users"])
 
-UPLOAD_DIR = "uploads/profile_pics"  # Directory to save uploaded files
-os.makedirs(UPLOAD_DIR, exist_ok=True)  # Create directory if not exists
+PROFILE_PICS_DIR = "static/profile_pics"
+os.makedirs(PROFILE_PICS_DIR, exist_ok=True)
 
-# Helper to save uploaded file and return path
-async def save_uploaded_file(file: UploadFile) -> str:
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
-    file_path = os.path.join(UPLOAD_DIR, f"{timestamp}.{file_extension}")
-    with open(file_path, "wb") as buffer:
-        buffer.write(await file.read())
-    return file_path
+@router.get("/", response_model=List[EmployeeOut])
+def get_users(db: Session = Depends(get_db), current=Depends(require_admin)):
+    rows = list_users(db)
+    return [
+        EmployeeOut(
+            employee_id=r.employee.employee_id,
+            full_name=r.employee.full_name,
+            role=r.employee.role,
+            phone=r.employee.phone,
+            username=r.username,
+            profile_pic=r.employee.profile_pic
+        ) for r in rows
+    ]
 
-# Create employee with file upload support
+# Create via FormData (compatible with your CreateUser component)
 @router.post("/", response_model=EmployeeOut)
-async def create_employee(
-    full_name: str,
-    role: str,
-    username: str,
-    password: str,
-    phone: str = None,
-    profile_pic: UploadFile = File(None),
-    db: Session = Depends(get_db)
-    # user: dict = Depends(require_admin)  # Uncomment for admin-only
+def create_new_user(
+    db: Session = Depends(get_db),
+    current=Depends(require_admin),
+    full_name: str = Form(...),
+    username: str = Form(...),
+    password: str = Form(...),
+    role: str = Form("user"),
+    phone: Optional[str] = Form(None),
+    profile_pic: Optional[UploadFile] = File(None),
 ):
-    file_path = None
+    pic_path = None
     if profile_pic:
-        file_path = await save_uploaded_file(profile_pic)
-    emp_data = EmployeeCreate(full_name=full_name, role=role, phone=phone, username=username, password=password, profile_pic=file_path)
-    return create_employee(db, emp_data)
+        filename = f"{username}_{profile_pic.filename}"
+        pic_path = os.path.join(PROFILE_PICS_DIR, filename)
+        with open(pic_path, "wb") as f:
+            shutil.copyfileobj(profile_pic.file, f)
 
-# List all employees
-@router.get("/", response_model=list[EmployeeOut])
-def list_employees(db: Session = Depends(get_db)):
-    return get_employees(db)
+    emp = create_employee(
+        db,
+        full_name=full_name,
+        role=role,
+        phone=phone,
+        username=username,
+        password=password,
+        profile_pic=pic_path,
+    )
 
-# Get employee by ID
-@router.get("/{employee_id}", response_model=EmployeeOut)
-def get_employee(employee_id: int, db: Session = Depends(get_db)):
-    emp = get_employee(db, employee_id)
-    if not emp:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    return emp
+    return EmployeeOut(
+        employee_id=emp.employee_id,
+        full_name=emp.full_name,
+        role=emp.role,
+        phone=emp.phone,
+        username=emp.login.username,
+        profile_pic=emp.profile_pic,
+    )
 
-# Update employee with file upload support
 @router.put("/{employee_id}", response_model=EmployeeOut)
-async def update_employee(
+def edit_employee(
     employee_id: int,
-    full_name: str = None,
-    role: str = None,
-    phone: str = None,
-    username: str = None,
-    password: str = None,
-    profile_pic: UploadFile = File(None),
-    db: Session = Depends(get_db)
-    # user: dict = Depends(require_admin)  # Uncomment for admin-only
+    db: Session = Depends(get_db),
+    current=Depends(require_admin),
+    full_name: Optional[str] = Form(None),
+    role: Optional[str] = Form(None),
+    phone: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+    profile_pic: Optional[UploadFile] = File(None),
 ):
-    file_path = None
+    pic_path = None
     if profile_pic:
-        file_path = await save_uploaded_file(profile_pic)
-    data = EmployeeUpdate(full_name=full_name, role=role, phone=phone, profile_pic=file_path)
-    emp = update_employee(db, employee_id, data)
-    if not emp:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    # If username or password provided, update login (assuming separate logic if needed)
-    if username or password:
-        # Add logic to update login if necessary (e.g., via crud)
-        pass  # For now, assume username not updatable or handle in crud
-    return emp
+        filename = f"{employee_id}_{profile_pic.filename}"
+        pic_path = os.path.join(PROFILE_PICS_DIR, filename)
+        with open(pic_path, "wb") as f:
+            shutil.copyfileobj(profile_pic.file, f)
 
-# Delete employee
-@router.delete("/{employee_id}")
-def delete_employee(employee_id: int, db: Session = Depends(get_db)):
-    emp = delete_employee(db, employee_id)
+    emp = update_employee(
+        db,
+        employee_id,
+        full_name=full_name,
+        role=role,
+        phone=phone,
+        password=password,
+        profile_pic_path=pic_path,
+    )
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found")
-    # Optionally delete profile_pic file from disk
-    if emp.profile_pic:
-        try:
-            os.remove(emp.profile_pic)
-        except OSError:
-            pass
-    return {"message": "Employee deleted successfully"}
+
+    return EmployeeOut(
+        employee_id=emp.employee_id,
+        full_name=emp.full_name,
+        role=emp.role,
+        phone=emp.phone,
+        username=emp.login.username if emp.login else "",
+        profile_pic=emp.profile_pic,
+    )
+
+@router.delete("/{employee_id}")
+def remove_employee(employee_id: int, db: Session = Depends(get_db), current=Depends(require_admin)):
+    ok = delete_employee(db, employee_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return {"detail": "Employee deleted successfully"}
+
+@router.patch("/{employee_id}/role", response_model=EmployeeOut)
+def update_role(employee_id: int, new_role: str = Form(...), db: Session = Depends(get_db), current=Depends(require_admin)):
+    emp = change_role(db, employee_id, new_role)
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return EmployeeOut(
+        employee_id=emp.employee_id,
+        full_name=emp.full_name,
+        role=emp.role,
+        phone=emp.phone,
+        username=emp.login.username if emp.login else "",
+        profile_pic=emp.profile_pic,
+    )
+
+# created by: professor zabihullah burhani
+# ICT and AI and Robotics متخصص
+# phone: 0705002913, email: zabihullahburhani@gmail.com
+# Address: Takhar University, COmputer science faculty.

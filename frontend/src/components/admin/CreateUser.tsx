@@ -51,7 +51,7 @@ export default function CreateUser({ onSuccess, employee, onCancel }: Props) {
         // Edit mode
         res = await updateEmployee(employee.employee_id, {
           full_name,
-          username,
+         // username,
           password: password || undefined, // Optional password change
           role,
           phone,
