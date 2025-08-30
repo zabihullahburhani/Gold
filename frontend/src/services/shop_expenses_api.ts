@@ -1,12 +1,12 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-const API_URL = `${API_BASE}/transactions`;
+const API_URL = `${API_BASE}/shop_expenses`;
 
-export async function fetchTransactions() {
+export async function fetchExpenses() {
   const res = await fetch(API_URL);
   return res.json();
 }
 
-export async function createTransaction(data: any) {
+export async function createExpense(data: any) {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -15,7 +15,7 @@ export async function createTransaction(data: any) {
   return res.json();
 }
 
-export async function updateTransaction(id: number, data: any) {
+export async function updateExpense(id: number, data: any) {
   const res = await fetch(`${API_URL}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -24,6 +24,6 @@ export async function updateTransaction(id: number, data: any) {
   return res.json();
 }
 
-export async function deleteTransaction(id: number) {
+export async function deleteExpense(id: number) {
   await fetch(`${API_URL}/${id}`, { method: "DELETE" });
 }

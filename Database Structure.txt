@@ -34,7 +34,8 @@ CREATE TABLE sqlite_sequence(name,seq);
 CREATE TABLE shop_expenses (
     expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
     expense_type TEXT NOT NULL,
-    amount REAL NOT NULL,
+    amount_usd REAL NOT NULL,
+    amount_afn REAL NOT NULL,
     expense_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     description TEXT,
     employee_id INTEGER,

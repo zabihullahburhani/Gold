@@ -5,193 +5,105 @@ import {
   createExpense as apiCreateExpense,
   updateExpense as apiUpdateExpense,
   deleteExpense as apiDeleteExpense,
-  Expense,
-} from "../../services/expenses_api";
-
-import { fetchEmployees } from "../../services/employees_api";
+} from "../../services/shop_expenses_api";
 import { Card, CardHeader, CardContent } from "./ui/card";
 
-const Expenses: React.FC = () => {
+interface Expense {
+  expense_id: number;
+  description: string;
+  amount_usd: number;
+  amount_afn: number;
+  created_at: string;
+}
+
+export default function ShopExpenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [form, setForm] = useState<Expense>({
-    expense_id: 0,
-    employee_id: 0,
+  const [newExpense, setNewExpense] = useState({
     description: "",
     amount_usd: 0,
-    date: "",
+    amount_afn: 0,
   });
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [employees, setEmployees] = useState<any[]>([]);
+
+  const loadData = async () => {
+    const data = await apiFetchExpenses();
+    setExpenses(Array.isArray(data) ? data : []);
+  };
 
   useEffect(() => {
     loadData();
-    loadEmployees();
   }, []);
 
-  const loadData = async () => {
-    try {
-      const data = await apiFetchExpenses();
-      setExpenses(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const loadEmployees = async () => {
-    try {
-      setEmployees(await fetchEmployees());
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await apiUpdateExpense(editingId, form);
-        setEditingId(null);
-      } else {
-        await apiCreateExpense(form);
-      }
-      resetForm();
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const resetForm = () => {
-    setForm({
-      expense_id: 0,
-      employee_id: 0,
-      description: "",
-      amount_usd: 0,
-      date: "",
-    });
-  };
-
-  const handleEdit = (e: Expense) => {
-    setForm(e);
-    setEditingId(e.expense_id || null);
+  const handleCreate = async () => {
+    await apiCreateExpense(newExpense);
+    setNewExpense({ description: "", amount_usd: 0, amount_afn: 0 });
+    loadData();
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("آیا مطمئن هستید؟")) return;
-    try {
-      await apiDeleteExpense(id);
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: name === "employee_id" || name === "amount_usd" ? Number(value) : value });
+    await apiDeleteExpense(id);
+    loadData();
   };
 
   return (
-    <Card className="p-4">
-      <CardHeader>
-        <h2 className="text-xl font-bold">مدیریت هزینه‌ها</h2>
-      </CardHeader>
+    <Card>
+      <CardHeader>مدیریت مصارف دکان</CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-2 mb-4">
-          <select
-            name="employee_id"
-            value={form.employee_id}
-            onChange={handleChange}
-            className="border p-2 w-full"
-            required
-          >
-            <option value={0}>انتخاب کارمند</option>
-            {employees.map((e) => (
-              <option key={e.employee_id} value={e.employee_id}>
-                {e.full_name}
-              </option>
-            ))}
-          </select>
-
+        <div className="space-y-2">
           <input
             type="text"
-            name="description"
             placeholder="توضیحات"
-            value={form.description}
-            onChange={handleChange}
-            className="border p-2 w-full"
-            required
+            value={newExpense.description}
+            onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+            className="border p-1 text-black"
           />
-
           <input
             type="number"
-            name="amount_usd"
-            placeholder="مبلغ (USD)"
-            value={form.amount_usd}
-            onChange={handleChange}
-            className="border p-2 w-full"
-            required
+            placeholder="مقدار مصرف (دالر)"
+            value={newExpense.amount_usd}
+            onChange={(e) => setNewExpense({ ...newExpense, amount_usd: parseFloat(e.target.value) })}
+            className="border p-1 text-black"
           />
-
           <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            className="border p-2 w-full"
-            required
+            type="number"
+            placeholder="مقدار مصرف (افغانی)"
+            value={newExpense.amount_afn}
+            onChange={(e) => setNewExpense({ ...newExpense, amount_afn: parseFloat(e.target.value) })}
+            className="border p-1 text-black"
           />
-
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-            {editingId ? "ویرایش هزینه" : "ثبت هزینه"}
+          <button onClick={handleCreate} className="bg-yellow-500 p-2 rounded text-black">
+            ثبت مصرف
           </button>
-        </form>
+        </div>
 
-        <table className="w-full border">
+        <table className="w-full mt-4 border text-yellow-400">
           <thead>
-            <tr className="bg-gray-100">
-              <th>ID</th>
-              <th>کارمند</th>
+            <tr>
+              <th>کد</th>
               <th>توضیحات</th>
-              <th>مبلغ (USD)</th>
+              <th>مصرف $</th>
+              <th>مصرف AFN</th>
               <th>تاریخ</th>
               <th>عملیات</th>
             </tr>
           </thead>
           <tbody>
-            {expenses.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center p-2">
-                  هیچ هزینه‌ای ثبت نشده است
+            {expenses.map((ex) => (
+              <tr key={ex.expense_id}>
+                <td>{ex.expense_id}</td>
+                <td>{ex.description}</td>
+                <td>{ex.amount_usd}</td>
+                <td>{ex.amount_afn}</td>
+                <td>{new Date(ex.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button onClick={() => handleDelete(ex.expense_id)} className="text-red-500">
+                    حذف
+                  </button>
                 </td>
               </tr>
-            ) : (
-              expenses.map((ex) => (
-                <tr key={ex.expense_id}>
-                  <td>{ex.expense_id}</td>
-                  <td>{employees.find((e) => e.employee_id === ex.employee_id)?.full_name}</td>
-                  <td>{ex.description}</td>
-                  <td>{ex.amount_usd}</td>
-                  <td>{ex.date}</td>
-                  <td>
-                    <button onClick={() => handleEdit(ex)} className="text-blue-500">
-                      ویرایش
-                    </button>
-                    <button
-                      onClick={() => handleDelete(ex.expense_id!)}
-                      className="text-red-500 ml-2"
-                    >
-                      حذف
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </CardContent>
     </Card>
   );
-};
-
-export default Expenses;
+}

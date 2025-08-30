@@ -1,16 +1,12 @@
-const API_URL = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_URL = `${API_BASE}/debts`;
 
 export async function fetchDebts() {
   const res = await fetch(API_URL);
   return res.json();
 }
 
-export async function createDebt(data: {
-  customer_id: number;
-  employee_id: number;
-  amount_usd: number;
-  description: string;
-}) {
+export async function createDebt(data: any) {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

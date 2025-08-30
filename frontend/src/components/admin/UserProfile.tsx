@@ -1,30 +1,61 @@
 "use client";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  fetchUsers,
+  createUser,
+  deleteUser
+} from "../../services/user_profiles_api";
+import { Card, CardHeader, CardContent } from "./ui/card";
 
-export default function UserProfile() {
-  const [profilePic, setProfilePic] = useState<string | null>(null);
+interface User {
+  user_id: number;
+  name: string;
+  email: string;
+}
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setProfilePic(URL.createObjectURL(e.target.files[0]));
-    }
+export default function UserProfiles() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [newUser, setNewUser] = useState({ name: "", email: "" });
+
+  useEffect(() => {
+    fetchUsers().then((d) => setUsers(Array.isArray(d) ? d : []));
+  }, []);
+
+  const handleAdd = async () => {
+    await createUser(newUser);
+    setNewUser({ name: "", email: "" });
+    fetchUsers().then((d) => setUsers(d));
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <h2 className="text-lg font-bold">🙍‍♂️ پروفایل کاربر</h2>
-      {profilePic ? (
-        <img
-          src={profilePic}
-          alt="User Profile"
-          className="w-24 h-24 rounded-full border-2 border-yellow-500"
+    <Card>
+      <CardHeader>پروفایل کاربران</CardHeader>
+      <CardContent>
+        <input
+          type="text"
+          placeholder="نام"
+          value={newUser.name}
+          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+          className="border p-1 text-black"
         />
-      ) : (
-        <div className="w-24 h-24 rounded-full border-2 border-gray-400 flex items-center justify-center text-gray-400">
-          No Image
-        </div>
-      )}
-      <input type="file" accept="image/*" onChange={handleUpload} />
-    </div>
+        <input
+          type="email"
+          placeholder="ایمیل"
+          value={newUser.email}
+          onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+          className="border p-1 text-black"
+        />
+        <button onClick={handleAdd} className="bg-yellow-500 px-2 rounded">افزودن</button>
+
+        <ul className="mt-4">
+          {users.map((u) => (
+            <li key={u.user_id}>
+              {u.name} - {u.email}{" "}
+              <button onClick={() => deleteUser(u.user_id)} className="text-red-500">حذف</button>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }

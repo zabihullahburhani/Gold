@@ -5,128 +5,89 @@ import {
   createGoldType as apiCreateGoldType,
   updateGoldType as apiUpdateGoldType,
   deleteGoldType as apiDeleteGoldType,
-  GoldType,
-} from "../../services/goldtypes_api";
-
+} from "../../services/gold_types_api";
 import { Card, CardHeader, CardContent } from "./ui/card";
 
-const GoldTypes: React.FC = () => {
+interface GoldType {
+  gold_type_id: number;
+  type_name: string;
+  description: string;
+  created_at: string;
+}
+
+export default function GoldTypes() {
   const [goldTypes, setGoldTypes] = useState<GoldType[]>([]);
-  const [form, setForm] = useState<GoldType>({ name: "", description: "" });
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [newType, setNewType] = useState({ type_name: "", description: "" });
+
+  const loadData = async () => {
+    const data = await apiFetchGoldTypes();
+    setGoldTypes(Array.isArray(data) ? data : []);
+  };
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      const data = await apiFetchGoldTypes();
-      setGoldTypes(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await apiUpdateGoldType(editingId, form);
-        setEditingId(null);
-      } else {
-        await apiCreateGoldType(form);
-      }
-      setForm({ name: "", description: "" });
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleEdit = (g: GoldType) => {
-    setForm(g);
-    setEditingId(g.gold_type_id || null);
+  const handleCreate = async () => {
+    await apiCreateGoldType(newType);
+    setNewType({ type_name: "", description: "" });
+    loadData();
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("آیا مطمئن هستید؟")) return;
-    try {
-      await apiDeleteGoldType(id);
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
+    await apiDeleteGoldType(id);
+    loadData();
   };
 
   return (
-    <Card className="p-4">
-      <CardHeader>
-        <h2 className="text-xl font-bold">مدیریت انواع طلا</h2>
-      </CardHeader>
+    <Card>
+      <CardHeader>مدیریت نوعیت طلا</CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-2 mb-4">
+        <div className="space-y-2">
           <input
-            type="text"
-            placeholder="نام نوع طلا"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="border p-2 w-full"
-            required
+            placeholder="نوعیت طلا"
+            value={newType.type_name}
+            onChange={(e) => setNewType({ ...newType, type_name: e.target.value })}
+            className="border p-1 text-black"
           />
           <input
-            type="text"
             placeholder="توضیحات"
-            value={form.description || ""}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="border p-2 w-full"
+            value={newType.description}
+            onChange={(e) => setNewType({ ...newType, description: e.target.value })}
+            className="border p-1 text-black"
           />
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-            {editingId ? "ویرایش نوع طلا" : "افزودن نوع طلا"}
+          <button onClick={handleCreate} className="bg-yellow-500 p-2 rounded text-black">
+            ثبت نوعیت
           </button>
-        </form>
+        </div>
 
-        <table className="w-full border">
+        <table className="w-full mt-4 border text-yellow-400">
           <thead>
-            <tr className="bg-gray-100">
-              <th>ID</th>
-              <th>نام</th>
+            <tr>
+              <th>کد</th>
+              <th>نوعیت</th>
               <th>توضیحات</th>
+              <th>تاریخ</th>
               <th>عملیات</th>
             </tr>
           </thead>
           <tbody>
-            {goldTypes.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="text-center p-2">
-                  هیچ نوع طلا ثبت نشده است
+            {goldTypes.map((g) => (
+              <tr key={g.gold_type_id}>
+                <td>{g.gold_type_id}</td>
+                <td>{g.type_name}</td>
+                <td>{g.description}</td>
+                <td>{new Date(g.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button onClick={() => handleDelete(g.gold_type_id)} className="text-red-500">
+                    حذف
+                  </button>
                 </td>
               </tr>
-            ) : (
-              goldTypes.map((g) => (
-                <tr key={g.gold_type_id}>
-                  <td>{g.gold_type_id}</td>
-                  <td>{g.name}</td>
-                  <td>{g.description}</td>
-                  <td>
-                    <button onClick={() => handleEdit(g)} className="text-blue-500">
-                      ویرایش
-                    </button>
-                    <button
-                      onClick={() => handleDelete(g.gold_type_id!)}
-                      className="text-red-500 ml-2"
-                    >
-                      حذف
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </CardContent>
     </Card>
   );
-};
-
-export default GoldTypes;
+}

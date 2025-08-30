@@ -1,42 +1,29 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_URL = `${API_BASE}/gold_types`;
 
-export interface GoldType {
-  gold_type_id?: number;
-  type_name: string;
-  purity: string;
-}
-
-// دریافت لیست
-export async function fetchGoldTypes(): Promise<GoldType[]> {
-  const res = await fetch(`${API_BASE}/goldtypes`);
-  if (!res.ok) throw new Error("Failed to fetch gold types");
+export async function fetchGoldTypes() {
+  const res = await fetch(API_URL);
   return res.json();
 }
 
-// افزودن
-export async function createGoldType(gt: GoldType): Promise<GoldType> {
-  const res = await fetch(`${API_BASE}/goldtypes`, {
+export async function createGoldType(data: any) {
+  const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(gt),
+    body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to create gold type");
   return res.json();
 }
 
-// ویرایش
-export async function updateGoldType(id: number, gt: GoldType): Promise<GoldType> {
-  const res = await fetch(`${API_BASE}/goldtypes/${id}`, {
+export async function updateGoldType(id: number, data: any) {
+  const res = await fetch(`${API_URL}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(gt),
+    body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to update gold type");
   return res.json();
 }
 
-// حذف
-export async function deleteGoldType(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/goldtypes/${id}`, { method: "DELETE" });
-  if (!res.ok) throw new Error("Failed to delete gold type");
+export async function deleteGoldType(id: number) {
+  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
 }
