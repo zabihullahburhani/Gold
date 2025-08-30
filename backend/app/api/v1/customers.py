@@ -1,69 +1,88 @@
-# path: backend/app/api/v1/customers.py
-"""
-FastAPI routes for customers:
-- POST   /api/v1/customers/        create
-- GET    /api/v1/customers/        list
-- GET    /api/v1/customers/{id}    retrieve
-- PUT    /api/v1/customers/{id}    update
-- DELETE /api/v1/customers/{id}    delete
+# backend/app/api/v1/customers.py
 
-Authentication: requires a logged-in user (get_current_user).
-You may restrict some endpoints to admin by using require_admin dependency.
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 
-from app.core.database import get_db
-from app.core.security import get_current_user, require_admin
 from app.schemas.customer import CustomerCreate, CustomerOut, CustomerUpdate
-from app.crud.customer import create_customer, list_customers, get_customer, update_customer, delete_customer
+from app.crud import customer as crud_customer
+from app.core.database import get_db
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
-# Create customer (any authenticated user)
 @router.post("/", response_model=CustomerOut, status_code=status.HTTP_201_CREATED)
-def api_create_customer(payload: CustomerCreate, db: Session = Depends(get_db), current=Depends(get_current_user)):
-    cust = create_customer(db, full_name=payload.full_name, phone=payload.phone, address=payload.address)
-    return cust
+def create_new_customer(
+    customer: CustomerCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    مسیر برای ایجاد یک مشتری جدید.
+    """
+    db_customer = crud_customer.get_customer_by_phone(db, phone=customer.phone)
+    if db_customer:
+        raise HTTPException(
+            status_code=400,
+            detail="A customer with this phone number already exists."
+        )
+    return crud_customer.create_customer(db=db, customer=customer)
 
-# List customers (any authenticated user)
 @router.get("/", response_model=List[CustomerOut])
-def api_list_customers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current=Depends(get_current_user)):
-    rows = list_customers(db, skip=skip, limit=limit)
-    return rows
+def get_all_customers(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """
+    مسیر برای دریافت لیست تمام مشتریان.
+    """
+    customers = crud_customer.get_customers(db, skip=skip, limit=limit)
+    return customers
 
-# Get single customer (any authenticated user)
 @router.get("/{customer_id}", response_model=CustomerOut)
-def api_get_customer(customer_id: int, db: Session = Depends(get_db), current=Depends(get_current_user)):
-    cust = get_customer(db, customer_id)
-    if not cust:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
-    return cust
+def get_customer_by_id(
+    customer_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    مسیر برای دریافت اطلاعات یک مشتری بر اساس ID.
+    """
+    db_customer = crud_customer.get_customer_by_id(db, customer_id=customer_id)
+    if db_customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found"
+        )
+    return db_customer
 
-# Update customer (allow only admin or role-based check)
 @router.put("/{customer_id}", response_model=CustomerOut)
-def api_update_customer(customer_id: int, payload: CustomerUpdate, db: Session = Depends(get_db), current=Depends(get_current_user)):
-    # Optionally enforce admin only:
-    # if current.get("role") != "admin":
-    #     raise HTTPException(status_code=403, detail="Not authorized")
-    cust = update_customer(db, customer_id, full_name=payload.full_name, phone=payload.phone, address=payload.address)
-    if not cust:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
-    return cust
+def update_existing_customer(
+    customer_id: int,
+    customer_data: CustomerUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    مسیر برای به‌روزرسانی اطلاعات یک مشتری.
+    """
+    db_customer = crud_customer.get_customer_by_id(db, customer_id=customer_id)
+    if db_customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found"
+        )
+    return crud_customer.update_customer(db=db, customer=db_customer, customer_in=customer_data)
 
-# Delete customer (admin-only recommended)
-@router.delete("/{customer_id}", status_code=status.HTTP_200_OK)
-def api_delete_customer(customer_id: int, db: Session = Depends(get_db), current=Depends(get_current_user)):
-    # Require admin to delete:
-    if current.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
-    ok = delete_customer(db, customer_id)
-    if not ok:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
-    return {"detail": "Customer deleted"}
-
-# created by: professor zabihullah burhani
-# ICT and AI and Robotics متخصص
-# phone: 0705002913, email: zabihullahburhani@gmail.com
-# Address: Takhar University, Computer Science Faculty
+@router.delete("/{customer_id}", response_model=CustomerOut)
+def delete_existing_customer(
+    customer_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    مسیر برای حذف یک مشتری.
+    """
+    db_customer = crud_customer.get_customer_by_id(db, customer_id=customer_id)
+    if db_customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found"
+        )
+    return crud_customer.delete_customer(db=db, customer=db_customer)

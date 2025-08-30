@@ -1,49 +1,60 @@
-# path: backend/app/crud/customer.py
-"""
-CRUD helpers for Customer model.
-All functions receive a SQLAlchemy Session.
-"""
+# backend/app/crud/customer.py
+
 from sqlalchemy.orm import Session
-from app.models.customer import Customer
 from typing import List, Optional
 
-def create_customer(db: Session, full_name: str, phone: Optional[str] = None, address: Optional[str] = None) -> Customer:
-    cust = Customer(full_name=full_name, phone=phone, address=address)
-    db.add(cust)
-    db.commit()
-    db.refresh(cust)
-    return cust
+from app.models.customer import Customer
+from app.schemas.customer import CustomerCreate, CustomerUpdate
 
-def get_customer(db: Session, customer_id: int) -> Optional[Customer]:
-    return db.get(Customer, customer_id)
+def get_customer_by_id(db: Session, customer_id: int) -> Optional[Customer]:
+    """
+    مشتری را بر اساس customer_id پیدا می‌کند.
+    """
+    return db.query(Customer).filter(Customer.customer_id == customer_id).first()
 
-def list_customers(db: Session, skip: int = 0, limit: int = 100) -> List[Customer]:
+def get_customer_by_phone(db: Session, phone: str) -> Optional[Customer]:
+    """
+    مشتری را بر اساس شماره تلفن پیدا می‌کند.
+    """
+    return db.query(Customer).filter(Customer.phone == phone).first()
+
+def get_customers(db: Session, skip: int = 0, limit: int = 100) -> List[Customer]:
+    """
+    لیستی از تمام مشتریان را از دیتابیس برمی‌گرداند.
+    """
     return db.query(Customer).offset(skip).limit(limit).all()
 
-def update_customer(db: Session, customer_id: int, full_name: Optional[str] = None, phone: Optional[str] = None, address: Optional[str] = None) -> Optional[Customer]:
-    cust = db.get(Customer, customer_id)
-    if not cust:
-        return None
-    if full_name is not None:
-        cust.full_name = full_name
-    if phone is not None:
-        cust.phone = phone
-    if address is not None:
-        cust.address = address
-    db.add(cust)
+def create_customer(db: Session, customer: CustomerCreate) -> Customer:
+    """
+    یک مشتری جدید در دیتابیس ایجاد می‌کند.
+    """
+    db_customer = Customer(
+        full_name=customer.full_name,
+        phone=customer.phone,
+        address=customer.address,
+    )
+    db.add(db_customer)
     db.commit()
-    db.refresh(cust)
-    return cust
+    db.refresh(db_customer)
+    return db_customer
 
-def delete_customer(db: Session, customer_id: int) -> bool:
-    cust = db.get(Customer, customer_id)
-    if not cust:
-        return False
-    db.delete(cust)
+def update_customer(db: Session, customer: Customer, customer_in: CustomerUpdate) -> Customer:
+    """
+    اطلاعات یک مشتری موجود را به‌روزرسانی می‌کند.
+    """
+    update_data = customer_in.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(customer, key, value)
+    
+    db.add(customer)
     db.commit()
-    return True
+    db.refresh(customer)
+    return customer
 
-# created by: professor zabihullah burhani
-# ICT and AI and Robotics متخصص
-# phone: 0705002913, email: zabihullahburhani@gmail.com
-# Address: Takhar University, Computer Science Faculty
+def delete_customer(db: Session, customer: Customer) -> Customer:
+    """
+    یک مشتری را از دیتابیس حذف می‌کند.
+    """
+    db.delete(customer)
+    db.commit()
+    return customer

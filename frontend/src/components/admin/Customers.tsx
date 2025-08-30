@@ -1,55 +1,114 @@
 "use client";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  fetchCustomers as apiFetchCustomers,
+  createCustomer as apiCreateCustomer,
+  updateCustomer as apiUpdateCustomer,
+  deleteCustomer as apiDeleteCustomer,
+} from "../../services/customers_api";
+import { Card, CardHeader, CardContent } from "./ui/card";
 
-const sampleCustomers = [
-  { id: 1, fullName: "احمد احمدی", phone: "0700000000", address: "کابل" },
-  { id: 2, fullName: "زهرا حسینی", phone: "0791111111", address: "هرات" },
-];
+interface Customer {
+  customer_id: number;
+  full_name: string;
+  phone: string;
+  address: string;
+  created_at: string;
+}
 
 export default function Customers() {
-  const [customers, setCustomers] = useState(sampleCustomers);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [newCustomer, setNewCustomer] = useState({
+    full_name: "",
+    phone: "",
+    address: "",
+  });
 
-  const handleDelete = (id: number) => {
-    if(confirm("آیا مطمئن هستید می‌خواهید حذف کنید؟")) {
-      setCustomers(customers.filter(c => c.id !== id));
-    }
+  const loadCustomers = async () => {
+    const data = await apiFetchCustomers();
+    setCustomers(Array.isArray(data) ? data : []);
+  };
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  const handleCreate = async () => {
+    await apiCreateCustomer(newCustomer);
+    setNewCustomer({ full_name: "", phone: "", address: "" });
+    loadCustomers();
+  };
+
+  const handleDelete = async (id: number) => {
+    await apiDeleteCustomer(id);
+    loadCustomers();
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">👥 مدیریت مشتریان</h1>
+    <Card>
+      <CardHeader>مدیریت مشتریان</CardHeader>
+      <CardContent>
+        {/* فرم افزودن */}
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="نام کامل"
+            value={newCustomer.full_name}
+            onChange={(e) => setNewCustomer({ ...newCustomer, full_name: e.target.value })}
+            className="border p-1 text-black"
+          />
+          <input
+            type="text"
+            placeholder="شماره تماس"
+            value={newCustomer.phone}
+            onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+            className="border p-1 text-black"
+          />
+          <input
+            type="text"
+            placeholder="آدرس"
+            value={newCustomer.address}
+            onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+            className="border p-1 text-black"
+          />
+          <button onClick={handleCreate} className="bg-yellow-500 p-2 rounded text-black">
+            ثبت مشتری
+          </button>
+        </div>
 
-      <button className="mb-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-        ➕ افزودن مشتری
-      </button>
-
-      <div className="overflow-x-auto">
-        <table className="w-full bg-white rounded shadow overflow-hidden">
-          <thead className="bg-gray-200">
+        {/* جدول */}
+        <table className="w-full mt-4 border text-yellow-400">
+          <thead>
             <tr>
-              <th className="p-2">ID</th>
-              <th className="p-2">نام کامل</th>
-              <th className="p-2">شماره تماس</th>
-              <th className="p-2">آدرس</th>
-              <th className="p-2">عملیات</th>
+              <th>کد</th>
+              <th>نام</th>
+              <th>شماره</th>
+              <th>آدرس</th>
+              <th>تاریخ</th>
+              <th>عملیات</th>
             </tr>
           </thead>
           <tbody>
-            {customers.map(c => (
-              <tr key={c.id} className="border-t">
-                <td className="p-2">{c.id}</td>
-                <td className="p-2">{c.fullName}</td>
-                <td className="p-2">{c.phone}</td>
-                <td className="p-2">{c.address}</td>
-                <td className="p-2 space-x-2">
-                  <button className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">ویرایش</button>
-                  <button onClick={() => handleDelete(c.id)} className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">حذف</button>
+            {customers.map((c) => (
+              <tr key={c.customer_id}>
+                <td>{c.customer_id}</td>
+                <td>{c.full_name}</td>
+                <td>{c.phone}</td>
+                <td>{c.address}</td>
+                <td>{new Date(c.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button
+                    onClick={() => handleDelete(c.customer_id)}
+                    className="text-red-500"
+                  >
+                    حذف
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

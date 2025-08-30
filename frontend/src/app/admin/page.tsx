@@ -61,6 +61,7 @@ export default function AdminPage() {
                 key={key}
                 onClick={() => setActive(key)}
                 className={`block w-[200px] p-3 rounded-lg text-right font-bold transition ${
+                  // عرض کامپوننت ها 
                   active === key
                     ? "bg-yellow-600 text-black"
                     : "bg-yellow-400 text-black hover:bg-yellow-500"

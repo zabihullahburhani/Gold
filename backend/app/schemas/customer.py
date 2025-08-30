@@ -1,33 +1,39 @@
-# path: backend/app/schemas/customer.py
-"""
-Pydantic schemas for Customer endpoints.
-Compatible with Pydantic v2 usage.
-"""
-from pydantic import BaseModel
+# backend/app/schemas/customer.py
+
+from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 from typing import Optional
 
 class CustomerBase(BaseModel):
+    """
+    Schema پایه برای داده‌های مشتری.
+    """
     full_name: str
     phone: Optional[str] = None
     address: Optional[str] = None
 
 class CustomerCreate(CustomerBase):
+    """
+    Schema برای ایجاد یک مشتری جدید.
+    """
     pass
 
-class CustomerUpdate(BaseModel):
+class CustomerUpdate(CustomerBase):
+    """
+    Schema برای به‌روزرسانی اطلاعات مشتری.
+    تمامی فیلدها اختیاری هستند.
+    """
     full_name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
 
 class CustomerOut(CustomerBase):
+    """
+    Schema برای نمایش اطلاعات مشتری پس از عملیات CRUD.
+    شامل شناسه مشتری و تاریخ ایجاد است.
+    """
     customer_id: int
-    created_at: Optional[str] = None
-
-    model_config = {
-        "from_attributes": True  # allows SQLAlchemy objects -> Pydantic (pydantic v2)
-    }
-
-# created by: professor zabihullah burhani
-# ICT and AI and Robotics متخصص
-# phone: 0705002913, email: zabihullahburhani@gmail.com
-# Address: Takhar University, Computer Science Faculty
+    created_at: datetime
+    
+    # تنظیمات Pydantic برای مدل‌ها
+    model_config = ConfigDict(from_attributes=True)

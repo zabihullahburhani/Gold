@@ -9,7 +9,6 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 #from app.api.v1.customers import router as customers_router
 
-
 # اگر لازم شد جداول جدید ساخته شوند (برای SQLite)
 Base.metadata.create_all(bind=engine)
 
