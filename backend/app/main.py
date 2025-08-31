@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
-#from app.api.v1.customers import router as customers_router
+from app.api.v1.customers import router as customers_router
 
 # اگر لازم شد جداول جدید ساخته شوند (برای SQLite)
 Base.metadata.create_all(bind=engine)
@@ -30,7 +30,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 #customer
-#app.include_router(customers_router, prefix="/api/v1")
+app.include_router(customers_router, prefix="/api/v1")
+
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}

@@ -25,14 +25,7 @@ class Login(Base):
 
     employee = relationship("Employee", back_populates="login")
 
-# ---- Optional other tables (matching your DB) ----
-class Customer(Base):
-    __tablename__ = "customers"
-    customer_id = Column(Integer, primary_key=True)
-    full_name = Column(String, nullable=False)
-    phone = Column(String)
-    address = Column(String)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 
 class ShopExpense(Base):
     __tablename__ = "shop_expenses"

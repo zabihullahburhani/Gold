@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import Notifications from "./shared/Notifications";
+import Notifications from "./admin/Notifications";
 
 export default function Header() {
   return (

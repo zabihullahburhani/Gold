@@ -9,7 +9,6 @@
 "use client";
 
 import { useState } from "react";
-import CreateUser from "../../components/admin/CreateUser";
 import AdminCard from "../../components/admin/AdminCard";
 import Dashboard from "../../components/admin/Dashboard";
 import Customers from "../../components/admin/Customers";
@@ -23,23 +22,27 @@ import AppActivation from "../../components/admin/AppActivation";
 import DatabaseSettings from "../../components/admin/DatabaseSettings";
 import Settings from "../../components/admin/Settings";
 import Logout from "../../components/admin/Logout";
+import Debts from '../../components/admin/Debt';
+import Notifications from "@/components/admin/Notifications";
 
 // Map of components with titles and icons
 const componentsMap: any = {
-  dashboard: { title: "📊 صفحه دشبورد", component: Dashboard },
+  dashboard: { title: "📊 داشبورد", component: Dashboard },
   customers: { title: "👥 مدیریت مشتریان", component: Customers },
-  employees: { title: "🏢 کارمندان", component: Employees },
-  createuser: { title: "➕ ایجاد یوزر", component: CreateUser },
-  goldprices: { title: "💰 قیمت طلا", component: GoldPrices },
-  transactions: { title: "📊 تراکنش‌ها", component: Transactions },
+  employees: { title: "🏢 مدیریت کارمندان", component: Employees },
+  debts: { title: "💳 مدیریت بدهی‌ها", component: Debts },
+  goldprices: { title: "💰 قیمت‌های طلا", component: GoldPrices },
+  transactions: { title: "📊 مدیریت تراکنش‌ها", component: Transactions },
   reports: { title: "📑 گزارش‌ها", component: Reports },
-  goldratediff: { title: "📉 تفاوت نرخ طلا", component: GoldRateDifferences },
-  expenses: { title: "💵 هزینه‌ها", component: ShopExpenses },
-  appactivation: { title: "🔑 فعال‌سازی اپلیکیشن", component: AppActivation },
-  dbsettings: { title: "🗄 تنظیمات دیتابیس", component: DatabaseSettings },
-  settings: { title: "⚙️ تنظیمات", component: Settings },
-  logout: { title: "🚪 خروج", component: Logout },
+  goldratediff: { title: "📉 اختلاف نرخ طلا", component: GoldRateDifferences },
+  expenses: { title: "💵 مصارف دوکان", component: ShopExpenses },
+  appactivation: { title: "🔑 فعال‌سازی برنامه", component: AppActivation },
+  dbsettings: { title: "🗄 تنظیمات  دیتابیس", component: DatabaseSettings },
+  settings: { title: "⚙️ تنظیمات کلی", component: Settings },
+  notifications: { title: "🔔 نوتیفیکیشن‌ها", component: Notifications },
+  logout: { title: "🚪 خروج از حساب", component: Logout },
 };
+
 
 export default function AdminPage() {
   const [active, setActive] = useState<string | null>(null);
@@ -60,7 +63,7 @@ export default function AdminPage() {
               <button
                 key={key}
                 onClick={() => setActive(key)}
-                className={`block w-[200px] p-3 rounded-lg text-right font-bold transition ${
+                className={`block w-[170px] p-3 rounded-lg text-right font-bold transition ${
                   // عرض کامپوننت ها 
                   active === key
                     ? "bg-yellow-600 text-black"
