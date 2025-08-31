@@ -1,3 +1,4 @@
+// path: frontend/src/components/widgets/GoldPriceWidget.tsx
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";

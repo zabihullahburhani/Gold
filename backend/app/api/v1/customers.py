@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.security import require_admin
@@ -21,10 +21,20 @@ def create_new_customer(
 ):
     return create_customer(db, customer)
 
+
+# table with search 
 @router.get("/", response_model=List[CustomerOut])
-def get_customers(db: Session = Depends(get_db), current=Depends(require_admin)):
-    customers = get_all_customers(db)
+#def get_customers(db: Session = Depends(get_db), current=Depends(require_admin)):
+#    customers = get_all_customers(db)
+
+def get_customers(
+    search: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current=Depends(require_admin)
+):
+    customers = get_all_customers(db, search=search)
     return customers
+
 
 @router.get("/{customer_id}", response_model=CustomerOut)
 def get_single_customer(

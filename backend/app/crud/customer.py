@@ -12,9 +12,24 @@ def create_customer(db: Session, customer: CustomerCreate):
 
 def get_customer(db: Session, customer_id: int) -> Optional[Customer]:
     return db.query(Customer).filter(Customer.customer_id == customer_id).first()
+# table with search
+#def get_all_customers(db: Session) -> List[Customer]:
+#    return db.query(Customer).all()
 
-def get_all_customers(db: Session) -> List[Customer]:
-    return db.query(Customer).all()
+
+def get_all_customers(db: Session, search: str = None) -> List[Customer]:
+    query = db.query(Customer)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                Customer.full_name.ilike(search_pattern),
+                Customer.phone.ilike(search_pattern),
+                Customer.address.ilike(search_pattern),
+            )
+        )
+    return query.all()
+
 
 def update_customer(db: Session, customer_id: int, customer: CustomerUpdate) -> Optional[Customer]:
     db_customer = get_customer(db, customer_id)

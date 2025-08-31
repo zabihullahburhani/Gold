@@ -10,7 +10,10 @@ interface Customer {
   created_at: string;
 }
 
-export async function fetchCustomers(token: string): Promise<Customer[]> {
+// send data to backend, search added
+
+export async function fetchCustomers(token: string, search=' '): Promise<Customer[]> {
+  const url = search ? `${API_URL}?search=${encodeURIComponent(search)}` : API_URL;
   const res = await fetch(API_URL, {
     headers: { Authorization: `Bearer ${token}` },
   });

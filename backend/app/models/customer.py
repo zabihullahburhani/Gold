@@ -1,3 +1,5 @@
+# app/models/customer.py
+
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from app.core.database import Base
 import datetime

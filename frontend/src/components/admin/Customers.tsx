@@ -24,6 +24,8 @@ export default function Customers() {
     phone: "",
     address: "",
   });
+  // search in customer table
+  const [searchQuery, setSearchQuery]= useState(' ');
 
   // توکن را از localStorage می‌خوانیم
   const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
@@ -31,7 +33,7 @@ export default function Customers() {
   const loadCustomers = async () => {
     if (!token) return;
     try {
-      const data = await apiFetchCustomers(token);
+      const data = await apiFetchCustomers(token, searchQuery); // search added
       setCustomers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to load customers:", error);
@@ -40,7 +42,7 @@ export default function Customers() {
 
   useEffect(() => {
     loadCustomers();
-  }, []);
+  }, [searchQuery]);  // search added
 
   const handleCreate = async () => {
     if (!token) return;
@@ -67,6 +69,17 @@ export default function Customers() {
     <Card className="text-yellow-400 bg-black border-yellow-400">
       <CardHeader>مدیریت مشتریان</CardHeader>
       <CardContent>
+           {/* فیلد ورودی جستجو */}
+    <div className="mb-4">
+      <input
+        type="text"
+        placeholder="جستجو بر اساس نام، شماره یا آدرس..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="border p-2 text-black w-full rounded-md"
+      />
+   </div>
+
         {/* فرم افزودن */}
         <div className="space-y-2 mb-4">
           <input

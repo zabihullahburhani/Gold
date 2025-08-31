@@ -31,12 +31,13 @@ CREATE TABLE customers (
 CREATE TABLE debts (
     debt_id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,
-    employee_id INTEGER,
-    amount_usd REAL DEFAULT 0,
-    amount_afn REAL DEFAULT 0,
-    due_date DATETIME,
-    status TEXT DEFAULT 'unpaid', -- unpaid, paid, partial
+    employee_id INTEGER NOT NULL,
+    gold_grams REAL NOT NULL DEFAULT 0.0,
+    tola REAL NOT NULL DEFAULT 0.0,
+    usd REAL NOT NULL DEFAULT 0.0,
+    afn REAL NOT NULL DEFAULT 0.0,
     notes TEXT,
+    is_paid BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(customer_id) REFERENCES customers(customer_id),
     FOREIGN KEY(employee_id) REFERENCES employees(employee_id)

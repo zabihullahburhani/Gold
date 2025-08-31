@@ -22,7 +22,7 @@ import AppActivation from "../../components/admin/AppActivation";
 import DatabaseSettings from "../../components/admin/DatabaseSettings";
 import Settings from "../../components/admin/Settings";
 import Logout from "../../components/admin/Logout";
-import Debts from '../../components/admin/Debt';
+import Debts from '../../components/admin/Debts';
 import Notifications from "@/components/admin/Notifications";
 
 // Map of components with titles and icons
