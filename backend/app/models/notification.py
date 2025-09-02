@@ -16,4 +16,6 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    employee = relationship("Employee", back_populates="notifications")
+
+
+    employee = relationship("Employee", back_populates="notification")

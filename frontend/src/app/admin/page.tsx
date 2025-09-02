@@ -23,7 +23,8 @@ import DatabaseSettings from "../../components/admin/DatabaseSettings";
 import Settings from "../../components/admin/Settings";
 import Logout from "../../components/admin/Logout";
 import Debts from '../../components/admin/Debts';
-import Notifications from "@/components/admin/Notifications";
+import Notifications from "../../components/admin/Notifications";
+import GoldTypes from "../../components/admin/GoldTypes";
 
 // Map of components with titles and icons
 const componentsMap: any = {
@@ -35,6 +36,7 @@ const componentsMap: any = {
   transactions: { title: "📊 مدیریت تراکنش‌ها", component: Transactions },
   reports: { title: "📑 گزارش‌ها", component: Reports },
   goldratediff: { title: "📉 اختلاف نرخ طلا", component: GoldRateDifferences },
+  goldtypes: { title: "📉 نوع  طلا", component: GoldTypes },
   expenses: { title: "💵 مصارف دوکان", component: ShopExpenses },
   appactivation: { title: "🔑 فعال‌سازی برنامه", component: AppActivation },
   dbsettings: { title: "🗄 تنظیمات  دیتابیس", component: DatabaseSettings },

@@ -2,6 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from app.core.database import Base
+from sqlalchemy.orm import relationship
 import datetime
 
 class Customer(Base):
@@ -11,3 +12,6 @@ class Customer(Base):
     phone = Column(String, nullable=True)
     address = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+    transactions = relationship("Transaction", back_populates="customer")
