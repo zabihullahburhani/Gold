@@ -1,10 +1,19 @@
-// frontend/src/services/api.ts (empl)
+// frontend/src/services/api.ts
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface LoginResponse {
   access_token: string;
   token_type: string;
   role: string;
+}
+
+// تابع کمکی برای خواندن JSON از پاسخ، حتی اگر پاسخی نباشد
+async function safeJson(res: Response): Promise<any> {
+    try {
+        return await res.json();
+    } catch (e) {
+        return { detail: res.statusText || 'No response body' };
+    }
 }
 
 // Login function
@@ -15,15 +24,39 @@ export async function login(username: string, password: string): Promise<{ ok: b
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    const data = await res.json();
-    if (res.ok) localStorage.setItem("token", data.access_token);
+    const data = await safeJson(res);
+    if (res.ok && data.access_token) {
+        localStorage.setItem("token", data.access_token);
+    }
     return { ok: res.ok, data };
   } catch (err: any) {
-    return { ok: false, data: { detail: err.message } };
+    return { ok: false, data: { detail: err.message || "Network error" } };
   }
 }
 
-// Create new employee with optional profile picture
+// 🎯 تابع اصلاح شده: fetchEmployees
+// این تابع خروجی استاندارد { ok, data } را برمی‌گرداند تا کامپوننت Employees بتواند آن را پردازش کند.
+export async function fetchEmployees(): Promise<{ ok: boolean; data: any }> {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return { ok: false, data: { detail: "Authentication token not found." } };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/users`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    const data = await safeJson(res);
+
+    return { ok: res.ok, data };
+  } catch (err: any) {
+    console.error("fetchEmployees failed:", err);
+    return { ok: false, data: { detail: err.message || "Network error during fetch." } };
+  }
+}
+
+// Create new employee (بدون تغییر)
 export async function createEmployee(user: {
   full_name: string;
   username: string;
@@ -49,53 +82,14 @@ export async function createEmployee(user: {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     return { ok: res.ok, data };
   } catch (err: any) {
-    return { ok: false, data: { detail: err.message } };
-  }
-}
-/*
-// Fetch list of employees
-export async function fetchEmployees(): Promise<{ ok: boolean; data: any[] }> {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("No token found");
-
-  try {
-    const res = await fetch(`${API_BASE}/users`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    return { ok: res.ok, data };
-  } catch (err: any) {
-    return { ok: false, data: [] };
-  }
-}
-*/
-
-
-// Fetch list of employees
-export async function fetchEmployees(): Promise<any[]> {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("No token found");
-
-  try {
-    const res = await fetch(`${API_BASE}/users`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Failed to fetch employees");
-    return data; // 🔹 حالا مستقیم لیست برمی‌گرداند
-  } catch (err: any) {
-    console.error("fetchEmployees failed:", err);
-    return [];
+    return { ok: false, data: { detail: err.message || "Network error" } };
   }
 }
 
-
-
-
-// Update employee
+// Update employee (بدون تغییر)
 export async function updateEmployee(
   id: number,
   payload: {
@@ -122,14 +116,14 @@ export async function updateEmployee(
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     return { ok: res.ok, data };
   } catch (err: any) {
-    return { ok: false, data: { detail: err.message } };
+    return { ok: false, data: { detail: err.message || "Network error" } };
   }
 }
 
-// Delete employee
+// Delete employee (بدون تغییر)
 export async function deleteEmployee(id: number): Promise<{ ok: boolean; data: any }> {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token found");
@@ -139,10 +133,9 @@ export async function deleteEmployee(id: number): Promise<{ ok: boolean; data: a
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     return { ok: res.ok, data };
   } catch (err: any) {
-    return { ok: false, data: { detail: err.message } };
+    return { ok: false, data: { detail: err.message || "Network error" } };
   }
 }
-

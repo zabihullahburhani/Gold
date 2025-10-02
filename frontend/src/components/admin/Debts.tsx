@@ -9,7 +9,9 @@ import { Card, CardHeader, CardContent } from "./ui/card";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-
+// ⚠️ STEP 1: تعریف رشته Base64 فونت فارسی (مثلاً فونت Vazir)
+// این قسمت برای PDF است و نیازی به تغییر ندارد مگر اینکه بخواهید PDF را اصلاح کنید.
+const Vazir_BASE64 = ""; // فرض بر این است که هنوز Base64 را جایگزین نکرده‌اید
 
 interface Debt {
   debt_id: number;
@@ -63,7 +65,9 @@ export default function Debts() {
 
       setDebts(debtsData);
       setCustomers(customersData);
-      setEmployees(employeesResponse.data || employeesResponse);
+      // مدیریت پاسخ fetchEmployees بر اساس پاسخ‌های قبلی
+      const employeeArray = Array.isArray(employeesResponse) ? employeesResponse : employeesResponse.data || [];
+      setEmployees(employeeArray);
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -103,30 +107,104 @@ export default function Debts() {
     }
   };
 
+  // 🔴 تابع صادرات به PDF (بدون تغییر عمده در منطق، فقط برای تکمیل)
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    doc.setFont("helvetica", "bold");
-    doc.text("گزارش بدهی‌ها", 14, 15);
 
+    if (Vazir_BASE64.length > 10) { 
+        doc.addFileToVFS('Vazir-Regular.ttf', Vazir_BASE64);
+        doc.addFont('Vazir-Regular.ttf', 'Vazir', 'normal');
+    }
+    const fontName = Vazir_BASE64.length > 10 ? 'Vazir' : 'helvetica';
+    
+    doc.setFont(fontName);
+    doc.setFontSize(12);
+    doc.text("گزارش بدهی‌ها", doc.internal.pageSize.getWidth() - 14, 15, { align: 'right' });
+
+    const head = ["یادداشت", "افغانی", "دالر", "توله", "گرام", "کارمند", "مشتری", "کد"];
+    
     autoTable(doc, {
-      startY: 25,
-      head: [["کد", "مشتری", "کارمند", "گرام", "توله", "دالر", "افغانی", "یادداشت"]],
-      body: debts.map((d) => [
-        d.debt_id,
-        customers.find((c) => c.customer_id === d.customer_id)?.full_name || "ناشناخته",
-        employees.find((e) => e.employee_id === d.employee_id)?.full_name || "ناشناخته",
-        d.gold_grams,
-        d.tola,
-        d.usd,
-        d.afn,
-        d.notes || "-",
-      ]),
-      styles: { font: "helvetica", fontSize: 9 },
-      headStyles: { fillColor: [255, 215, 0], textColor: 0 },
+        startY: 25,
+        head: [head.reverse()], 
+        body: debts.map((d) => [
+          d.notes || "-",
+          d.afn.toLocaleString('fa'), 
+          d.usd.toLocaleString('fa'),
+          d.tola.toLocaleString('fa'),
+          d.gold_grams.toLocaleString('fa'),
+          employees.find((e) => e.employee_id === d.employee_id)?.full_name || "ناشناخته",
+          customers.find((c) => c.customer_id === d.customer_id)?.full_name || "ناشناخته",
+          d.debt_id,
+        ]).map(row => row.reverse()), 
+
+        styles: { font: fontName, direction: "rtl", halign: "right", fontSize: 9 }, 
+        headStyles: { fillColor: [255, 215, 0], textColor: 0, halign: "center" },
+        theme: 'grid', 
+        didDrawPage: (data) => {
+            doc.text("گزارش بدهی‌ها - ادامه", doc.internal.pageSize.getWidth() - 14, 10, { align: 'right' });
+        }
     });
 
     doc.save("debts_report.pdf");
   };
+
+  // ✅ تابع جدید: صادرات به Excel (CSV)
+  const handleExportExcel = () => {
+    const shopName = "پاسه فروشی غفاری";
+    const title = "گزارش بدهی‌ها";
+    
+    // تعریف هدر ستون‌ها به ترتیب مورد نظر
+    const headers = [
+      "کد", 
+      "مشتری", 
+      "کارمند", 
+      "گرام", 
+      "توله", 
+      "دالر", 
+      "افغانی", 
+      "یادداشت",
+      "تاریخ ثبت"
+    ];
+
+    // ایجاد رشته CSV:
+    // 1. نام فروشگاه
+    // 2. عنوان گزارش
+    // 3. سطر هدر
+    let csvContent = `${shopName}\n${title}\n${headers.join(",")}\n`;
+
+    // افزودن سطر داده‌ها
+    debts.forEach((d) => {
+      const customerName = customers.find((c) => c.customer_id === d.customer_id)?.full_name || "ناشناخته";
+      const employeeName = employees.find((e) => e.employee_id === d.employee_id)?.full_name || "ناشناخته";
+      
+      const row = [
+        d.debt_id,
+        customerName,
+        employeeName,
+        d.gold_grams,
+        d.tola,
+        d.usd,
+        d.afn,
+        // جایگزینی کاماها و خطوط جدید در یادداشت برای جلوگیری از به هم خوردن CSV
+        (d.notes || "-").replace(/,/g, '،').replace(/\n/g, ' '), 
+        d.created_at.split('T')[0] // فقط تاریخ
+      ].join(",");
+
+      csvContent += row + "\n";
+    });
+
+    // ایجاد لینک دانلود و اجرا
+    const blob = new Blob(["\ufeff", csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "debts_report_ghaffari.csv");
+    link.style.visibility = 'hidden'; // مخفی کردن لینک
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <Card className="bg-black text-yellow-400 border border-yellow-500 rounded-xl">
@@ -138,11 +216,18 @@ export default function Debts() {
           >
             گزارش‌گیری (PDF)
           </button>
+          
+          {/* ✅ دکمه جدید برای خروجی Excel */}
+          <button onClick={handleExportExcel}
+            className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-500 text-xs"
+          >
+            خروجی (Excel)
+          </button>
         </div>
       </CardHeader>
 
       <CardContent>
-        {/* فرم افزودن بدهی */}
+        {/* ... (کدهای فرم افزودن بدهی بدون تغییر) ... */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 mb-2 text-sm min-w-0">
           <div className="min-w-0">
             <label className="block mb-0.5 text-xs">مشتری:</label>
@@ -249,21 +334,21 @@ export default function Debts() {
             </button>
           </div>
         </div>
-
+        
         {/* جدول بدهی‌ها */}
-        <div className="overflow-x-auto">
-          <table className="w-full border border-yellow-500 text-xs">
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full text-xs border border-yellow-500 border-collapse"> 
             <thead className="bg-yellow-600 text-black">
               <tr>
-                <th className="px-1 py-0.5">کد</th>
-                <th className="px-1 py-0.5">مشتری</th>
-                <th className="px-1 py-0.5">کارمند</th>
-                <th className="px-1 py-0.5">گرام</th>
-                <th className="px-1 py-0.5">توله</th>
-                <th className="px-1 py-0.5">دالر</th>
-                <th className="px-1 py-0.5">افغانی</th>
-                <th className="px-1 py-0.5">یادداشت</th>
-                <th className="px-1 py-0.5">عملیات</th>
+                <th className="px-1 py-1 border border-black">کد</th> 
+                <th className="px-1 py-1 border border-black">مشتری</th>
+                <th className="px-1 py-1 border border-black">کارمند</th>
+                <th className="px-1 py-1 border border-black">گرام</th>
+                <th className="px-1 py-1 border border-black">توله</th>
+                <th className="px-1 py-1 border border-black">دالر</th>
+                <th className="px-1 py-1 border border-black">افغانی</th>
+                <th className="px-1 py-1 border border-black">یادداشت</th>
+                <th className="px-1 py-1 border border-black">عملیات</th>
               </tr>
             </thead>
             <tbody>
@@ -275,15 +360,15 @@ export default function Debts() {
 
                 return (
                   <tr key={d.debt_id} className="border-t border-yellow-500">
-                    <td className="px-1 py-0.5">{d.debt_id}</td>
-                    <td className="px-1 py-0.5">{customerName}</td>
-                    <td className="px-1 py-0.5">{employeeName}</td>
-                    <td className="px-1 py-0.5">{d.gold_grams}</td>
-                    <td className="px-1 py-0.5">{d.tola}</td>
-                    <td className="px-1 py-0.5">{d.usd}</td>
-                    <td className="px-1 py-0.5">{d.afn}</td>
-                    <td className="px-1 py-0.5">{d.notes || "-"}</td>
-                    <td className="px-1 py-0.5">
+                    <td className="px-1 py-0.5 border border-yellow-500">{d.debt_id}</td> 
+                    <td className="px-1 py-0.5 border border-yellow-500">{customerName}</td>
+                    <td className="px-1 py-0.5 border border-yellow-500">{employeeName}</td>
+                    <td className="px-1 py-0.5 border border-yellow-500">{d.gold_grams}</td>
+                    <td className="px-1 py-0.5 border border-yellow-500">{d.tola}</td>
+                    <td className="px-1 py-0.5 border border-yellow-500">{d.usd}</td>
+                    <td className="px-1 py-0.5 border border-yellow-500">{d.afn}</td>
+                    <td className="px-1 py-0.5 border border-yellow-500 whitespace-normal min-w-[100px] max-w-[200px] overflow-hidden text-ellipsis">{d.notes || "-"}</td> 
+                    <td className="px-1 py-0.5 border border-yellow-500">
                       <button
                         onClick={() => handleDelete(d.debt_id)}
                         className="text-red-400 hover:text-red-600"
@@ -296,7 +381,7 @@ export default function Debts() {
               })}
               {debts.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="p-1 text-center text-gray-400">
+                  <td colSpan={9} className="p-1 text-center text-gray-400 border border-yellow-500">
                     بدهی‌ای ثبت نشده است.
                   </td>
                 </tr>

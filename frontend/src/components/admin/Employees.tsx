@@ -3,11 +3,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import CreateUser from "./CreateUser";
-import { Card, CardHeader, CardContent } from "./ui/card";
+import { Card, CardHeader, CardContent } from "./ui/card"; // فرض بر این است که مسیر درست است
 import {
   fetchEmployees as apiFetchEmployees,
   deleteEmployee as apiDeleteEmployee,
-} from "../../services/api";
+} from "../../services/api"; // استفاده از فایل اصلاح شده
 
 interface Employee {
   employee_id: number | null;
@@ -18,7 +18,7 @@ interface Employee {
   profile_pic?: string | null;
 }
 
-// تابع کمکی برای نرمال‌سازی ورودی از API
+// تابع کمکی برای نرمال‌سازی ورودی
 function normalizeEmployee(raw: any): Employee {
   return {
     employee_id:
@@ -48,19 +48,44 @@ export default function Employees() {
     setLoading(true);
     setError(null);
     try {
+      // res اکنون حتماً ساختار { ok, data } دارد
       const res = await apiFetchEmployees();
-      console.log("DEBUG fetchEmployees response:", res); // لاگ برای دیباگ
+      console.log("DEBUG fetchEmployees response:", res); 
+
       if (res.ok) {
-        // res.data ممکن است آرایه یا شی باشد
-        const arr = Array.isArray(res.data) ? res.data : [];
-        const normalized = arr.map((r: any) => normalizeEmployee(r));
+        let arr: any[] = [];
+
+        // 🎯 منطق استخراج آرایه برای پشتیبانی از کامبوباکس و لیست اصلی
+        if (Array.isArray(res.data)) {
+          // حالت ۱: اگر res.data خودش آرایه باشد (مانند پاسخ مستقیم بک‌اند)
+          arr = res.data;
+        } else if (res.data && typeof res.data === 'object') {
+          // حالت ۲: اگر res.data یک شیء باشد (مانند پاسخ صفحه‌بندی شده { users: [...] })
+          // 'users' را به دلیل استفاده از endpoint '/users' در API اولویت می‌دهیم.
+          const potentialArray = res.data.users || res.data.employees || res.data.items || res.data.data;
+          
+          if (Array.isArray(potentialArray)) {
+            arr = potentialArray;
+          }
+        }
+        
+        console.log("DEBUG Extracted Array Length:", arr.length);
+
+        const normalized = arr
+            .map((r: any) => normalizeEmployee(r))
+            // بهتر است آیتم‌هایی که ID ندارند را فیلتر کنیم
+            .filter(e => e.employee_id !== null || e.username !== ""); 
+            
         setEmployees(normalized);
       } else {
-        setError(res.error || `خطا در دریافت کارمندان (status: ${res.status})`);
+        // 🎯 مدیریت خطا بر اساس data.detail از فایل API
+        // این بخش مشکل خطای status: نامشخص را حل می‌کند
+        const detailError = res.data?.detail || "خطای نامشخص در دریافت داده";
+        setError(`خطا: ${detailError} (Code: ${res.data?.status || 'N/A'})`); 
         setEmployees([]);
       }
     } catch (err: any) {
-      console.error("fetchEmployeesList error:", err);
+      console.error("fetchEmployeesList catch error:", err);
       setError(err?.message || "خطای نامشخص در دریافت کارمندان");
       setEmployees([]);
     } finally {
@@ -77,11 +102,12 @@ export default function Employees() {
     if (id === null) return alert("ID نامعتبر برای حذف");
     if (!confirm("آیا مطمئن هستید می‌خواهید حذف کنید؟")) return;
     try {
-      const { ok, error: delError } = await apiDeleteEmployee(id);
-      if (ok) {
+      const res = await apiDeleteEmployee(id);
+      if (res.ok) {
         // حذف از لیست محلی
         setEmployees((prev) => prev.filter((e) => e.employee_id !== id));
       } else {
+        const delError = res.data?.detail || res.data?.error || "";
         alert("❌ خطا در حذف کارمند: " + (delError || ""));
       }
     } catch (err: any) {
@@ -132,7 +158,7 @@ export default function Employees() {
       {/* نمایش خطا */}
       {error && (
         <div className="text-red-400 bg-red-100/5 p-3 rounded">
-          خطا: {error}
+          {error}
         </div>
       )}
 
@@ -146,7 +172,8 @@ export default function Employees() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {employees.map((emp) => (
-            <Card key={emp.employee_id ?? emp.username}>
+            // استفاده از ID معتبر یا username به عنوان key
+            <Card key={emp.employee_id || emp.username}> 
               <CardHeader>{emp.full_name || "بدون نام"}</CardHeader>
               <CardContent>
                 {emp.profile_pic && (

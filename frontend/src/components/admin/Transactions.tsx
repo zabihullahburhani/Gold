@@ -1,8 +1,3 @@
-// نویسنده: ذبیح الله برهانی
-// متخصص ICT, AI و رباتیک
-// شماره تماس: 0705002913, ایمیل: zabihullahburhani@gmail.com
-// آدرس: دانشگاه تخار، دانشکده علوم کامپیوتر.
-
 // frontend/src/components/admin/Transactions.tsx
 "use client";
 
@@ -16,8 +11,6 @@ import {
   deleteTransaction,
 } from "../../services/transaction_api";
 
-
-
 import { fetchCustomers } from "../../services/customers_api";
 import { fetchGoldTypes } from "../../services/goldtypes_api";
 
@@ -27,8 +20,8 @@ interface Customer {
 }
 
 interface GoldType {
-    gold_type_id: number;
-    name: string;
+  gold_type_id: number;
+  name: string;
 }
 
 interface Transaction {
@@ -51,7 +44,9 @@ export default function Transactions() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers,
+    // (کدهای Customers و GoldTypes و Form State بدون تغییر باقی می‌مانند)
+  ] = useState<Customer[]>([]);
   const [goldTypes, setGoldTypes] = useState<GoldType[]>([]);
   const [editingTxn, setEditingTxn] = useState<Transaction | null>(null);
 
@@ -71,6 +66,7 @@ export default function Transactions() {
   const loadData = useCallback(async () => {
     try {
       if (token) {
+        // فرض بر این است که fetchTransactions ساختار داده صحیح را برمی‌گرداند.
         const [txnData, customerData, goldTypeData] = await Promise.all([
           fetchTransactions(token),
           fetchCustomers(token),
@@ -153,6 +149,7 @@ export default function Transactions() {
   };
 
   const handleDelete = async (id: number) => {
+    if (!confirm("آیا مطمئن هستید که می‌خواهید این تراکنش را حذف کنید؟")) return;
     try {
       if (!token) throw new Error("Authentication token not found.");
       await deleteTransaction(token, id);
@@ -176,15 +173,19 @@ export default function Transactions() {
 
   const totalDollar = transactions.reduce((sum, t) => sum + t.dollar_balance, 0);
 
+  const baseClasses = "px-4 py-3 text-sm text-gray-300 border-b border-gray-700 border-l"; // کلاس‌های پایه برای سلول‌ها
+  const headerClasses = "px-4 py-3 text-right text-xs font-medium text-gray-300 border-l border-gray-700"; // کلاس‌های پایه برای هدر
+
   return (
     <div className="p-6 space-y-8 bg-gray-900 text-white min-h-screen font-inter">
-      {/* فرم ثبت/ویرایش تراکنش */}
+      {/* فرم ثبت/ویرایش تراکنش (بدون تغییر) */}
       <Card className="rounded-xl overflow-hidden bg-gray-800 p-6 shadow-xl border border-teal-700">
         <CardHeader>
           <h1 className="text-3xl font-bold text-center text-teal-400">💰 مدیریت تراکنش‌ها</h1>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* ... کدهای فرم ... */}
             {/* مشتری */}
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-400">👤 مشتری</label>
@@ -343,45 +344,49 @@ export default function Transactions() {
           ) : transactions.length > 0 ? (
             
             <div className="overflow-x-auto rounded-lg border border-gray-700">
-              <table className="min-w-full divide-y divide-gray-700">
+              {/* اعمال استایل border-collapse برای نمایش تمام بوردرها */}
+              <table className="min-w-full divide-y divide-gray-700 border-collapse">
                 <thead className="bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">مشتری</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">نوع طلا</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">نوع معامله</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">جمع دالر </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">باقی دالر </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300"> باقی طلا</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">جمع طلا </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">بیلانس دالر</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">بیلانس طلا</th>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-300"> توضیحات</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">تاریخ</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300">عملیات</th>
+                    {/* ستون ID تراکنش افزوده شد */}
+                    <th className={headerClasses + " border-r border-gray-700"}>ID</th> 
+                    <th className={headerClasses}>تاریخ</th>
+                    <th className={headerClasses}>مشتری</th>
+                    <th className={headerClasses}>نوع طلا</th>
+                    <th className={headerClasses}>نوع معامله</th>
+                    <th className={headerClasses}> جمع دالر </th>
+                    <th className={headerClasses}>باقی دالر </th>
+                    <th className={headerClasses}> باقی طلا</th>
+                    <th className={headerClasses}>جمع طلا </th>
+                    <th className={headerClasses}>بیلانس دالر</th>
+                    <th className={headerClasses}>بیلانس طلا</th>
+                    <th className={headerClasses}> توضیحات</th>
+                    <th className={headerClasses}>عملیات</th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {transactions.map((txn) => (
+                  {transactions.map((txn, index) => (
                     <tr key={txn.txn_id} className="hover:bg-gray-700 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-300">{getCustomerName(txn.customer_id)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-300">{getGoldTypeName(txn.gold_type_id)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-300">{txn.type}</td>
-                      <td className="px-6 py-4 text-sm">{txn.dollar_in.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-sm">{txn.dollar_out.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-sm">{txn.gold_in.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-sm">{txn.gold_out.toFixed(2)}</td>
-                      <td className={`px-6 py-4 text-sm font-semibold ${txn.dollar_balance >= 0 ? "text-green-400" : "text-red-400"}`}>
+                      {/* نمایش ID تراکنش */}
+                      <td className={baseClasses + " border-r"}>{txn.txn_id}</td>
+                      <td className={baseClasses}>{txn.date}</td>
+                      <td className={baseClasses}>{getCustomerName(txn.customer_id)}</td>
+                      <td className={baseClasses}>{getGoldTypeName(txn.gold_type_id)}</td>
+                      <td className={baseClasses}>{txn.type}</td>
+                      <td className={baseClasses}>{txn.dollar_in.toFixed(2)}</td>
+                      <td className={baseClasses}>{txn.dollar_out.toFixed(2)}</td>
+                      <td className={baseClasses}>{txn.gold_in.toFixed(2)}</td>
+                      <td className={baseClasses}>{txn.gold_out.toFixed(2)}</td>
+                      <td className={`${baseClasses} font-semibold ${txn.dollar_balance >= 0 ? "text-green-400" : "text-red-400"}`}>
                         {txn.dollar_balance.toFixed(2)}
                       </td>
-                      <td className={`px-6 py-4 text-sm font-semibold ${txn.gold_balance >= 0 ? "text-green-400" : "text-red-400"}`}>
+                      <td className={`${baseClasses} font-semibold ${txn.gold_balance >= 0 ? "text-green-400" : "text-red-400"}`}>
                         {txn.gold_balance.toFixed(2)}
                       </td>
-                      {/*   تفصیل*/}
-                      <td className={`px-6 py-4 text-sm font-semibold ${txn.detail  ? "text-green-400" : "text-red-400"}`}>
-                        {txn.detail }
+                      <td className={baseClasses + " whitespace-normal"}>
+                        {txn.detail || '-'}
                       </td>
-                      <td className="px-6 py-4 text-sm">{txn.date}</td>
-                      <td className="px-6 py-4 text-sm text-right">
+                      <td className={baseClasses + " text-right border-r-0"}> 
                         <button onClick={() => handleEdit(txn)} className="text-indigo-400 hover:text-indigo-600 mr-2">✏️</button>
                         <button onClick={() => handleDelete(txn.txn_id)} className="text-red-400 hover:text-red-600">🗑️</button>
                       </td>
@@ -398,5 +403,3 @@ export default function Transactions() {
     </div>
   );
 }
-
-
