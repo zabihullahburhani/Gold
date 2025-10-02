@@ -12,6 +12,7 @@ from app.crud.customer import (
     update_customer,
     delete_customer,
 )
+from app.models.customer import Customer  # 👈 اضافه شد
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -22,18 +23,17 @@ def create_new_customer(
     return create_customer(db, customer)
 
 
-# table with search 
+# ✅ جستجو بر اساس نام
 @router.get("/", response_model=List[CustomerOut])
-#def get_customers(db: Session = Depends(get_db), current=Depends(require_admin)):
-#    customers = get_all_customers(db)
-
 def get_customers(
     search: Optional[str] = None,
     db: Session = Depends(get_db),
-    current=Depends(require_admin)
+    current=Depends(require_admin),
 ):
-    customers = get_all_customers(db, search=search)
-    return customers
+    query = db.query(Customer)
+    if search:
+        query = query.filter(Customer.full_name.ilike(f"%{search}%"))
+    return query.all()
 
 
 @router.get("/{customer_id}", response_model=CustomerOut)

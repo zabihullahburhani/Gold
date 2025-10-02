@@ -4,8 +4,10 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 from datetime import datetime
 
+
 class Debt(Base):
     __tablename__ = "debts"
+
     debt_id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=False)
     employee_id = Column(Integer, ForeignKey("employees.employee_id"), nullable=False)

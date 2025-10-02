@@ -6,12 +6,28 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.database import Base, engine
 
+
+from app.api.v1 import shop_expenses
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 from app.api.v1.customers import router as customers_router
 from app.api.v1.debts import router as debts_router 
 from app.api.v1.transactions import router as transactions_router
 from app.api.v1.gold_types import router as gold_types_router 
+from app.api.v1.notifications import router as notifications_router
+from app.api.v1.gold_rates import router as  gold_rates_router
+from app.api.v1.activations import router as activations_router
+from app.api.v1.reports import router as reports_router
+
+
+from app.api.v1 import invoices
+from app.api.v1 import backup
+
+
+# models for SQL...
+import app.models.user
+import app.models.shop_expense
+
 
 
 # اگر لازم شد جداول جدید ساخته شوند (برای SQLite)
@@ -32,6 +48,8 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # API v1
+# سایر روترها
+app.include_router(shop_expenses.router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 #customer
@@ -39,6 +57,14 @@ app.include_router(customers_router, prefix="/api/v1")
 app.include_router(debts_router, prefix="/api/v1")
 app.include_router(transactions_router, prefix="/api/v1")
 app.include_router(gold_types_router, prefix="/api/v1")
+app.include_router (notifications_router, prefix="/api/v1")
+app.include_router(gold_rates_router, prefix="/api/v1")
+app.include_router(activations_router, prefix="/api/v1")
+app.include_router(reports_router, prefix="/api/v1")
+
+
+app.include_router(invoices.router, prefix="/api/v1")
+app.include_router(backup.router, prefix="/api/v1")
 
 
 @app.get("/health")

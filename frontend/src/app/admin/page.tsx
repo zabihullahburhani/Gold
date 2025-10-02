@@ -1,4 +1,6 @@
 // frontend/src/app/admin/page.tsx
+
+
 // This is the main admin page with cards for different sections.
 // Added CreateUser to the map for employee management.
 // Created by: Professor Zabihullah Burhani
@@ -15,12 +17,12 @@ import Customers from "../../components/admin/Customers";
 import Employees from "../../components/admin/Employees";
 import GoldPrices from "../../components/admin/GoldPrices";
 import Transactions from "../../components/admin/Transactions";
-import Reports from "../../components/admin/Reports";
+import Reports from "../../components/admin/DownloadReport";
 import GoldRateDifferences from "../../components/admin/GoldRateDifferences";
 import ShopExpenses from "../../components/admin/ShopExpenses";
 import AppActivation from "../../components/admin/AppActivation";
 import DatabaseSettings from "../../components/admin/DatabaseSettings";
-import Settings from "../../components/admin/Settings";
+import Backup from "../../components/admin/backup";
 import Logout from "../../components/admin/Logout";
 import Debts from '../../components/admin/Debts';
 import Notifications from "../../components/admin/Notifications";
@@ -39,9 +41,8 @@ const componentsMap: any = {
   goldtypes: { title: "📉 نوع  طلا", component: GoldTypes },
   expenses: { title: "💵 مصارف دوکان", component: ShopExpenses },
   appactivation: { title: "🔑 فعال‌سازی برنامه", component: AppActivation },
-  dbsettings: { title: "🗄 تنظیمات  دیتابیس", component: DatabaseSettings },
-  settings: { title: "⚙️ تنظیمات کلی", component: Settings },
   notifications: { title: "🔔 نوتیفیکیشن‌ها", component: Notifications },
+  backup: { title: "🔒 بک اپ", component: Backup },
   logout: { title: "🚪 خروج از حساب", component: Logout },
 };
 

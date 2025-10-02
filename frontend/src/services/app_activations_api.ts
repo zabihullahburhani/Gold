@@ -1,22 +1,54 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+// frontend/src/services/app_activations_api.ts
 
-// گرفتن آی‌دی سخت‌افزاری و ارسال به سرور
-export async function requestActivation() {
-  const res = await fetch(`${API_BASE}/activation/request`, {
-    method: "POST",
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1/activations";
+
+// 📌 گرفتن لیست همه فعال‌سازی‌ها
+export async function fetchActivations() {
+  const res = await fetch(API_BASE, {
+    headers: { "Content-Type": "application/json" },
   });
-  if (!res.ok) throw new Error("Failed to request activation");
-  return res.json(); // { hardware_id: "xxxx" }
+  if (!res.ok) throw new Error("خطا در بارگذاری فعال‌سازی‌ها");
+  return res.json();
 }
 
-// بررسی کد فعال‌سازی
-export async function verifyActivation(code: string) {
-  const res = await fetch(`${API_BASE}/activation/verify`, {
+
+
+// 📌 ارسال درخواست فعال‌سازی (کاربر ID سخت‌افزاری‌اش را ثبت می‌کند)
+export async function createActivationRequest(payload: {
+  motherboard_code: string;
+  cpu_code: string;
+  hdd_code: string;
+  mac_code: string;
+}) {
+  const res = await fetch(API_BASE + "/request", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to verify activation");
-  const data = await res.json();
-  return data.success;
+  if (!res.ok) throw new Error("خطا در ارسال درخواست فعال‌سازی");
+  return res.json();
+}
+
+// 📌 فعال کردن برنامه با کد دریافتی
+export async function activateCode(
+  motherboard_code: string,
+  activation_code: string
+) {
+  const res = await fetch(API_BASE + "/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ motherboard_code, activation_code }),
+  });
+  if (!res.ok) throw new Error("کد فعال‌سازی معتبر نیست یا خطا رخ داده");
+  return res.json();
+}
+
+// 📌 گرفتن وضعیت فعال‌سازی (برای AuthGuard یا چک قبل از عملیات مهم)
+export async function getActivationStatus(motherboard_code: string) {
+  const res = await fetch(`${API_BASE}/status/${motherboard_code}`, {
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("خطا در بررسی وضعیت فعال‌سازی");
+  return res.json();
 }

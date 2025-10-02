@@ -22,6 +22,7 @@ CREATE TABLE logins (
 
 CREATE UNIQUE INDEX ix_logins_username ON logins (username);
 CREATE INDEX ix_logins_login_id ON logins (login_id);
+
 CREATE TABLE customers (
     customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
@@ -31,6 +32,7 @@ CREATE TABLE customers (
 );
 
 CREATE TABLE sqlite_sequence(name,seq);
+
 CREATE TABLE shop_expenses (
     expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
     expense_type TEXT NOT NULL,
@@ -56,26 +58,46 @@ CREATE TABLE gold_types (
 
 CREATE TABLE gold_rates (
     rate_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    gold_type_id INTEGER NOT NULL,
-    rate_per_gram REAL NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id)
+
+    -- 📌 قیمت پایه هر گرم (مثلاً از بازار جهانی یا منبع اصلی)
+    rate_per_gram_usd REAL NOT NULL,   -- قیمت پایه به دالر
+    rate_per_gram_afn REAL NOT NULL,   -- قیمت پایه به افغانی
+
+    -- 📌 اختلاف قیمت (مارژین / سود عمده‌فروش)
+    difference_per_gram_usd REAL NOT NULL DEFAULT 0, -- اختلاف قیمت به دالر
+    difference_per_gram_afn REAL NOT NULL DEFAULT 0, -- اختلاف قیمت به افغانی
+
+    -- 📌 قیمت نهایی فروش (محاسبه‌شده: پایه + اختلاف)
+    final_rate_usd AS (rate_per_gram_usd + difference_per_gram_usd) STORED,
+    final_rate_afn AS (rate_per_gram_afn + difference_per_gram_afn) STORED,
+
+    -- 📌 زمان ثبت
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+
+
+
+-- جدول تراکنش ها اپدیت شد.
 CREATE TABLE transactions (
     txn_id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,
-    employee_id INTEGER NOT NULL,
     gold_type_id INTEGER NOT NULL,
-    grams REAL NOT NULL,
-    rate_per_gram REAL NOT NULL,
-    total_usd REAL NOT NULL,
-    txn_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    notes TEXT,
-    FOREIGN KEY(customer_id) REFERENCES customers(customer_id),
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id),
-    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id)
+    type TEXT CHECK(type IN ('buy','sell')) NOT NULL,     -- نوع معامله
+    dollar_balance REAL DEFAULT 0,                        -- بیلانس دالر
+    dollar_in REAL DEFAULT 0,                             -- جمع دالر (ورودی)
+    dollar_out REAL DEFAULT 0,                            -- باقی یا خرج دالر
+    gold_balance REAL DEFAULT 0,                          -- بیلانس طلا (گرام)
+    gold_in REAL DEFAULT 0,                               -- جمع طلا
+    gold_out REAL DEFAULT 0,                              -- باقی یا خرج طلا
+    detail TEXT,                                          -- تفصیل
+    date TEXT NOT NULL,                                   -- تاریخ (مثلاً 1404-04-16)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
+    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id) ON DELETE CASCADE
 );
+
+
 
 CREATE TABLE notifications (
     notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,4 +124,15 @@ CREATE TABLE shop_assets (
     uploaded_by INTEGER,
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(uploaded_by) REFERENCES employees(employee_id)
+);
+
+CREATE TABLE activations (
+    activation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    motherboard_code TEXT NOT NULL,
+    CPU_code  TEXT NOT NULL,
+    HDD_code  TEXT NOT NULL,
+    MAC_code  TEXT NOT NULL,
+    activation_code TEXT,
+    is_active BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

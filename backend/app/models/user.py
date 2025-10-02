@@ -14,8 +14,10 @@ class Employee(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     login = relationship("Login", uselist=False, back_populates="employee")
-    transactions = relationship("Transaction", back_populates="employee")
-    
+    #transactions = relationship("Transaction", back_populates="employee")
+    expenses = relationship("ShopExpense", back_populates="employee", overlaps="expenses")
+    notifications = relationship("Notification", back_populates="employee")
+
 
 class Login(Base):
     __tablename__ = "logins"
@@ -26,6 +28,7 @@ class Login(Base):
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
 
     employee = relationship("Employee", back_populates="login")
+
 
 
 

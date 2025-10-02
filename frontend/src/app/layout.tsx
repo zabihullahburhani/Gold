@@ -3,7 +3,7 @@ import './globals.css';
 import { ReactNode } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import Sidebar from 'components/Sidebar';
+import Sidebar from '../components/Sidebar';
 
 export const metadata = {
   title: 'GJBMS System',
@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen">
         <header className="header">
           <div className="header-inner">
-            <div className="brand">GJBMS</div>
+            <div className="brand"> <a href="/admin">  GJBMS</a> </div>
             <Header />
           </div>
         </header>

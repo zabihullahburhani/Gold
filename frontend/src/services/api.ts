@@ -1,4 +1,4 @@
-// frontend/src/services/api.ts
+// frontend/src/services/api.ts (empl)
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface LoginResponse {
@@ -55,7 +55,7 @@ export async function createEmployee(user: {
     return { ok: false, data: { detail: err.message } };
   }
 }
-
+/*
 // Fetch list of employees
 export async function fetchEmployees(): Promise<{ ok: boolean; data: any[] }> {
   const token = localStorage.getItem("token");
@@ -71,6 +71,29 @@ export async function fetchEmployees(): Promise<{ ok: boolean; data: any[] }> {
     return { ok: false, data: [] };
   }
 }
+*/
+
+
+// Fetch list of employees
+export async function fetchEmployees(): Promise<any[]> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No token found");
+
+  try {
+    const res = await fetch(`${API_BASE}/users`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Failed to fetch employees");
+    return data; // 🔹 حالا مستقیم لیست برمی‌گرداند
+  } catch (err: any) {
+    console.error("fetchEmployees failed:", err);
+    return [];
+  }
+}
+
+
+
 
 // Update employee
 export async function updateEmployee(
@@ -122,3 +145,4 @@ export async function deleteEmployee(id: number): Promise<{ ok: boolean; data: a
     return { ok: false, data: { detail: err.message } };
   }
 }
+

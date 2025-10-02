@@ -48,3 +48,25 @@ export async function deleteCustomer(id: number, token: string) {
   });
   if (!res.ok) throw new Error("Failed to delete customer");
 }
+
+
+// frontend/src/services/customers_api.ts
+//import { API_BASE } from "./api";
+
+
+export async function searchCustomers(search: string, token: string) {
+  const res = await fetch(`${API_URL}?search=${encodeURIComponent(search)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch customers");
+  return res.json();
+}
+
+// گرفتن یک مشتری بر اساس ID
+export async function getCustomer(id: number, token: string) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch customer");
+  return res.json();
+}

@@ -1,29 +1,45 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-const API_URL = `${API_BASE}/gold_rates`;
+// frontend/src/services/goldrates_api.ts
 
-export async function fetchGoldRates() {
-  const res = await fetch(API_URL);
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = `${API_BASE}/gold-rates`;
+
+// 📌 دریافت لیست نرخ‌ها
+export async function fetchGoldRates(token: string) {
+  const res = await fetch(API_URL, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch gold rates");
   return res.json();
 }
 
-export async function createGoldRate(data: any) {
+// 📌 ایجاد نرخ جدید
+export async function createGoldRate(
+  rate: {
+    rate_per_gram_usd: number;
+    rate_per_gram_afn: number;
+    difference_per_gram_usd: number;
+    difference_per_gram_afn: number;
+  },
+  token: string
+) {
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(rate),
   });
+  if (!res.ok) throw new Error("Failed to create gold rate");
   return res.json();
 }
 
-export async function updateGoldRate(id: number, data: any) {
+// 📌 حذف نرخ
+export async function deleteGoldRate(id: number, token: string) {
   const res = await fetch(`${API_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
   });
-  return res.json();
-}
-
-export async function deleteGoldRate(id: number) {
-  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete gold rate");
+  return true;
 }
