@@ -2,44 +2,49 @@
 import React from "react";
 
 export default function Footer() {
-  return (
-    <footer className="bg-black text-gold-400 p-6 mt-auto border-t border-gold-400">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-        
-        {/* بخش کپی‌رایت */}
-        <div className="flex flex-col text-center md:text-right">
-          <span className="font-semibold">© 2025 BrainBridge</span>
-          <span>سیستم مدیریت – همه حقوق محفوظ است</span>
-        </div>
+    return (
+        <footer className="bg-gray-950 text-gold-400 p-6 mt-auto border-t border-gray-700 shadow-inner">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                
+                {/* 1. بخش کپی‌رایت و سازنده */}
+                <div className="flex flex-col text-center md:text-right space-y-1">
+                    <span className="text-lg font-bold text-yellow-500">
+                        
+                        شرکت سازنده: BrainBridge@2025
+                    </span>
+                    <span className="text-sm text-gray-400">
+                        تمامی حقوق نرم‌افزار محفوظ است.
+                    </span>
+                </div>
 
-        {/* بخش لینک‌ها و اطلاعات */}
-        <div className="text-sm">
-          <table className="border-collapse border-0">
-            <tbody>
-              <tr className="space-x-6">
-                <td className="px-4 py-2">
-                  <a href="#" className="hover:underline">📞 شماره تماس: 0705002913</a>
-                </td>
-                <td className="px-4 py-2">
-                  <a href="https://wa.me/989102454274" className="hover:underline">💬 واتساپ: +989102454274</a>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-2">
-                  <a href="#" className="hover:underline">ℹ️ درباره ما: شرکت BrainBridge</a>
-                </td>
-                <td className="px-4 py-2">
-                  <a href="#" className="hover:underline">📜 قوانین</a>
-                </td>
-                <td className="px-4 py-2">
-                  <a href="#" className="hover:underline">🔒 حریم خصوصی</a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                {/* 2. بخش لینک‌ها و اطلاعات تماس */}
+                <div className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-end gap-x-8 gap-y-3 text-sm">
+                    
+                    {/* ردیف اول اطلاعات */}
+                    <div className="flex gap-x-8 gap-y-3 flex-wrap justify-center">
+                        <a href="tel:0705002913" className="hover:text-yellow-500 transition-colors flex items-center">
+                            📞 شماره تماس: 0705002913  
+                        </a>
+                        <a href="https://wa.me/989102454274" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors flex items-center">
+                            💬 واتساپ: +989102454247
+                        </a>
+                    </div>
+                    
+                    {/* ردیف دوم اطلاعات */}
+                    <div className="flex gap-x-8 gap-y-3 flex-wrap justify-center">
+                        <a href="#" className="hover:text-yellow-500 transition-colors">
+                            ℹ️ درباره ما
+                        </a>
+                        <a href="#" className="hover:text-yellow-500 transition-colors">
+                            📜 قوانین استفاده
+                        </a>
+                        <a href="#" className="hover:text-yellow-500 transition-colors">
+                            🔒 حریم خصوصی
+                        </a>
+                    </div>
 
-      </div>
-    </footer>
-  );
+                </div>
+            </div>
+        </footer>
+    );
 }
