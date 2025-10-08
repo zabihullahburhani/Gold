@@ -2,7 +2,6 @@
 from pydantic import BaseModel
 from typing import Optional
 
-# ----- Auth -----
 class LoginIn(BaseModel):
     username: str
     password: str
@@ -12,7 +11,7 @@ class TokenOut(BaseModel):
     token_type: str = "bearer"
     role: str
 
-# ----- Employee -----
+  # ----- Employee -----
 class EmployeeCreate(BaseModel):
     full_name: str
     username: str
@@ -37,6 +36,27 @@ class EmployeeOut(BaseModel):
     class Config:
         from_attributes = True  # SQLAlchemy -> Pydantic
 
+  # برای پشتیبانی از ORM (مانند SQLAlchemy)
+
+class SecurityQuestionRequest(BaseModel):
+    username: str
+
+class SecurityQuestionAnswer(BaseModel):
+    username: str
+    answers: dict[str, str]  # مثال: {"question1": "پاسخ1", "question2": "پاسخ2"}
+
+class ResetPasswordConfirm(BaseModel):
+    username: str
+    new_password: str
+
+class UserProfile(BaseModel):
+    username: str
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    phone: Optional[str] = None
+    profile_pic: Optional[str] = None
+    password: Optional[str] = None
+    
 # created by: professor zabihullah burhani
 # ICT and AI and Robotics متخصص
 # phone: 0705002913, email: zabihullahburhani@gmail.com

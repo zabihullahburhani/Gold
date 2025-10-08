@@ -98,6 +98,81 @@ CREATE TABLE transactions (
 );
 
 
+-- جدول: gold_analysis
+CREATE TABLE gold_analysis (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- ورودی‌های کاربر:
+    gross_weight NUMERIC(10, 4) NOT NULL,    -- وزن خالص به گرام
+    initial_purity NUMERIC(5, 3) NOT NULL,    -- عیار مبدا
+    tola_rate NUMERIC(10, 2) NOT NULL,        -- نرخ توله (به دلار)
+    
+    -- فیلدهای محاسبه شده (برای گزارش‌دهی سریع):
+    final_weight NUMERIC(10, 4) NOT NULL,     -- وزن نهایی بر اساس عیار 23.88
+    usd_rate NUMERIC(15, 2) NOT NULL,         -- نرخ به دالر (محاسبه نهایی قیمت)
+    
+    -- فیلدهای زمان‌بندی:
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- تاریخ ایجاد رکورد
+    analysis_date DATE NOT NULL DEFAULT CURRENT_DATE                -- تاریخ تحلیل (برای فیلترینگ)
+);
+
+-- Index برای فیلترینگ تاریخ:
+CREATE INDEX idx_gold_analysis_date ON gold_analysis (analysis_date);
+
+
+-- روزنامچه
+
+-- جدول: money_ledger
+CREATE TABLE money_ledger (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transaction_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- تاریخ و زمان ثبت
+    
+    -- ستون‌های ورودی
+    description TEXT NOT NULL,          -- تفصیل (مانند "گرفت احمد توسط مدیرش")
+    received NUMERIC(15, 2) DEFAULT 0,  -- رسیدها (دخلی)
+    paid NUMERIC(15, 2) DEFAULT 0,      -- گرفت‌ها (خرجی)
+    
+    -- ستون محاسبه شده
+    balance NUMERIC(15, 2) NOT NULL     -- بیلانس لحظه‌ای بعد از این تراکنش
+);
+
+-- Index برای فیلترینگ تاریخ و عملکرد:
+CREATE INDEX idx_money_date ON money_ledger (transaction_date);
+
+
+-- جدول: gold_ledger
+CREATE TABLE gold_ledger (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transaction_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- تاریخ و زمان ثبت
+    
+    -- ستون‌های ورودی
+    description TEXT NOT NULL,          -- تفصیل
+    received NUMERIC(10, 4) DEFAULT 0,  -- رسیدهای طلا (به گرم)
+    paid NUMERIC(10, 4) DEFAULT 0,      -- گرفت‌های طلا (به گرم)
+    
+    -- فیلد تخصصی طلا
+    heel_purity_carat NUMERIC(5, 3),    -- عیار پاشنه (مثلاً 23.88 یا 18)
+    
+    -- ستون محاسبه شده
+    balance NUMERIC(10, 4) NOT NULL     -- بیلانس لحظه‌ای طلا (به گرم)
+);
+
+-- Index برای فیلترینگ تاریخ و عملکرد:
+CREATE INDEX idx_gold_date ON gold_ledger (transaction_date);
+
+-- جدول دخل ها
+-- جدول: capital_records
+CREATE TABLE capital_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,    -- شناسه یکتا
+    usd_capital NUMERIC(15, 2) NOT NULL,     -- مقدار سرمایه به دالر
+    gold_capital NUMERIC(10, 4) NOT NULL,    -- مقدار سرمایه به طلا (توله یا گرام)
+    date DATE NOT NULL DEFAULT CURRENT_DATE  -- تاریخ ثبت سرمایه
+);
+
+-- ایندکس برای جستجوی سریع‌تر بر اساس تاریخ
+CREATE INDEX idx_capital_records_date ON capital_records (date);
+
+
+
 
 CREATE TABLE notifications (
     notification_id INTEGER PRIMARY KEY AUTOINCREMENT,

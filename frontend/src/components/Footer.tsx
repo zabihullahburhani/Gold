@@ -1,5 +1,7 @@
+
 "use client";
 import React from "react";
+import Link from "next/link";
 
 export default function Footer() {
     return (
@@ -9,7 +11,6 @@ export default function Footer() {
                 {/* 1. بخش کپی‌رایت و سازنده */}
                 <div className="flex flex-col text-center md:text-right space-y-1">
                     <span className="text-lg font-bold text-yellow-500">
-                        
                         شرکت سازنده: BrainBridge@2025
                     </span>
                     <span className="text-sm text-gray-400">
@@ -32,15 +33,15 @@ export default function Footer() {
                     
                     {/* ردیف دوم اطلاعات */}
                     <div className="flex gap-x-8 gap-y-3 flex-wrap justify-center">
-                        <a href="#" className="hover:text-yellow-500 transition-colors">
+                        <Link href="/content/about" className="hover:text-yellow-500 transition-colors">
                             ℹ️ درباره ما
-                        </a>
-                        <a href="#" className="hover:text-yellow-500 transition-colors">
+                        </Link>
+                        <Link href="/content/terms" className="hover:text-yellow-500 transition-colors">
                             📜 قوانین استفاده
-                        </a>
-                        <a href="#" className="hover:text-yellow-500 transition-colors">
+                        </Link>
+                        <Link href="/content/privacy" className="hover:text-yellow-500 transition-colors">
                             🔒 حریم خصوصی
-                        </a>
+                        </Link>
                     </div>
 
                 </div>

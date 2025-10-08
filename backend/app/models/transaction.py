@@ -13,9 +13,15 @@ class Transaction(Base):
 
     txn_id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=False)
-    gold_type_id = Column(Integer, ForeignKey("gold_types.gold_type_id"), nullable=False)
+    # gold_type_id = Column(Integer, ForeignKey("gold_types.gold_type_id"), nullable=False) # ⬅ حذف شد
 
-    type = Column(String, nullable=False)  # buy or sell
+    # ⬅ فیلدهای جدید برای ذخیره جزئیات محاسبه:
+    weight = Column(Float, nullable=False, default=0)         # وزن (گرم)
+    source_carat = Column(Float, nullable=False, default=0)   # عیار مبدا
+    gold_rate = Column(Float, nullable=False, default=0)      # نرخ توله
+    gold_amount = Column(Float, nullable=False, default=0)    # مقدار طلا (عیار 23.88) - نتیجه محاسبه
+
+    type = Column(String, nullable=False)   # buy or sell
     dollar_balance = Column(Float, default=0)
     dollar_in = Column(Float, default=0)
     dollar_out = Column(Float, default=0)
@@ -26,5 +32,5 @@ class Transaction(Base):
     date = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    
     customer = relationship("Customer", back_populates="transactions")
-    gold_type = relationship("GoldType", back_populates="transactions")

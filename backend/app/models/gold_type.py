@@ -14,4 +14,4 @@ class GoldType(Base):
     description = Column(Text)
     
     # اضافه کردن این خط برای ایجاد رابطه با جدول transactions
-    transactions = relationship("Transaction", back_populates="gold_type")
+    #transactions = relationship("Transaction", back_populates="gold_type")

@@ -13,5 +13,9 @@ class Customer(Base):
     address = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-
+    
     transactions = relationship("Transaction", back_populates="customer")
+
+    money_ledgers = relationship("MoneyLedger", back_populates="customer")
+    
+    gold_ledgers = relationship("GoldLedger", back_populates="customer")

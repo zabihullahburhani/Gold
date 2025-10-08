@@ -82,7 +82,7 @@ export default function CreateUser({ onSuccess, employee, onCancel }: Props) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md text-black mb-4">
+    <div className="bg-white p-6 rounded-xl shadow-md text-white mb-4">
       <h2 className="text-lg font-bold mb-4">
         {employee ? "✏️ ویرایش کارمند" : "➕ ایجاد کارمند جدید"}
       </h2>
