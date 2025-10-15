@@ -14,13 +14,15 @@ from app.core.security import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# سوالات امنیتی ثابت (برای سادگی)
+# لیست پرسش‌های امنیتی برای انتخاب کاربر
 SECURITY_QUESTIONS = [
     "نام اولین معلم شما چیست؟",
-    "نام بابای شما چیست؟",
+    "نام پیت شما چیست؟",
 ]
-# ذخیره موقت پاسخ‌ها (در عمل، باید از یک ذخیره امن‌تر مانند Redis استفاده شود)
-TEMP_ANSWERS = {}  # {username: {"question1": "answer1", "question2": "answer2"}}
+
+# ذخیره موقت پاسخ‌ها (در عمل باید از Redis یا پایگاه‌داده استفاده شود)
+# ساختار پیشنهادی: {username: {"question_1": "answer1", "question_2": "answer2"}}
+TEMP_ANSWERS = []
 
 @router.post("/login", response_model=TokenOut)
 def login(payload: LoginIn, db: Session = Depends(get_db)):

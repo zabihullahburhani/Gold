@@ -1,4 +1,4 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface LoginResponse {
   access_token: string;
@@ -38,6 +38,28 @@ export async function login(username: string, password: string): Promise<{ ok: b
     return { ok: false, data: { detail: err.message || "Network error" } };
   }
 }
+
+
+export async function logout() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return { ok: false, data: { detail: "No token found" } };
+  }
+  try {
+    const response = await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    return { ok: response.ok, data };
+  } catch (err) {
+    console.error("logout error:", err);
+    return { ok: false, data: { detail: "Network error" } };
+  }
+}
+
 
 export async function fetchUserProfile(): Promise<{ ok: boolean; data: UserProfile | { detail: string } }> {
   const token = localStorage.getItem("token");

@@ -14,7 +14,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="fa" dir="rtl">
       <head>
         {/* نسخه آفلاین Tailwind از پوشه public/offline */}
-        <Script src="/offline/tailwind.min.js" strategy="beforeInteractive" />
+       {/* <Script src="/offline/tailwind.min.js" strategy="beforeInteractive" />*/} 
+        <link rel="preload" href="/offline/tailwind.min.css" as="style" />
+        <link rel="stylesheet" href="/offline/tailwind.min.css" />
       </head>
 
       <body className="min-h-screen bg-gray-100 font-inter">
