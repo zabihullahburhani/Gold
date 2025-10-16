@@ -1,212 +1,0 @@
-backend/backend.db
-
-CREATE TABLE employees (
-        employee_id INTEGER NOT NULL,
-        full_name VARCHAR NOT NULL,
-        role VARCHAR NOT NULL,
-        phone VARCHAR,
-        created_at DATETIME, profile_pic TEXT,
-        PRIMARY KEY (employee_id)
-);
-
-CREATE INDEX ix_employees_employee_id ON employees (employee_id);
-CREATE TABLE logins (
-        login_id INTEGER NOT NULL,
-        employee_id INTEGER,
-        username VARCHAR NOT NULL,
-        password_hash VARCHAR NOT NULL,
-        last_login DATETIME,
-        PRIMARY KEY (login_id),
-        FOREIGN KEY(employee_id) REFERENCES employees (employee_id)
-);
-
-CREATE UNIQUE INDEX ix_logins_username ON logins (username);
-CREATE INDEX ix_logins_login_id ON logins (login_id);
-
-CREATE TABLE customers (
-    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name TEXT NOT NULL,
-    phone TEXT,
-    address TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE sqlite_sequence(name,seq);
-
-CREATE TABLE shop_expenses (
-    expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    expense_type TEXT NOT NULL,
-    amount REAL NOT NULL,
-    expense_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    description TEXT,
-    employee_id INTEGER,
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE shop_balance (
-    balance_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    gold_balance_grams REAL DEFAULT 0,
-    cash_balance_usd REAL DEFAULT 0,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE gold_types (
-    gold_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT
-);
-
-CREATE TABLE gold_rates (
-    rate_id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    -- 📌 قیمت پایه هر گرم (مثلاً از بازار جهانی یا منبع اصلی)
-    rate_per_gram_usd REAL NOT NULL,   -- قیمت پایه به دالر
-    rate_per_gram_afn REAL NOT NULL,   -- قیمت پایه به افغانی
-
-    -- 📌 اختلاف قیمت (مارژین / سود عمده‌فروش)
-    difference_per_gram_usd REAL NOT NULL DEFAULT 0, -- اختلاف قیمت به دالر
-    difference_per_gram_afn REAL NOT NULL DEFAULT 0, -- اختلاف قیمت به افغانی
-
-    -- 📌 قیمت نهایی فروش (محاسبه‌شده: پایه + اختلاف)
-    final_rate_usd AS (rate_per_gram_usd + difference_per_gram_usd) STORED,
-    final_rate_afn AS (rate_per_gram_afn + difference_per_gram_afn) STORED,
-
-    -- 📌 زمان ثبت
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-
-
-
--- جدول تراکنش ها اپدیت شد.
-CREATE TABLE transactions (
-    txn_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    customer_id INTEGER NOT NULL,
-     type TEXT CHECK(type IN ('buy','sell')) NOT NULL,     -- نوع معامله
-    dollar_balance REAL DEFAULT 0,                        -- بیلانس دالر
-    dollar_in REAL DEFAULT 0,                             -- جمع دالر (ورودی)
-    dollar_out REAL DEFAULT 0,                            -- باقی یا خرج دالر
-    gold_balance REAL DEFAULT 0,                          -- بیلانس طلا (گرام)
-    gold_in REAL DEFAULT 0,                               -- جمع طلا
-    gold_out REAL DEFAULT 0,                              -- باقی یا خرج طلا
-    detail TEXT,                                          -- تفصیل
-    date TEXT NOT NULL,                                   -- تاریخ (مثلاً 1404-04-16)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
-   
-);
-
-
--- جدول: gold_analysis
-CREATE TABLE gold_analysis (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    -- ورودی‌های کاربر:
-    gross_weight NUMERIC(10, 4) NOT NULL,    -- وزن خالص به گرام
-    initial_purity NUMERIC(5, 3) NOT NULL,    -- عیار مبدا
-    tola_rate NUMERIC(10, 2) NOT NULL,        -- نرخ توله (به دلار)
-    
-    -- فیلدهای محاسبه شده (برای گزارش‌دهی سریع):
-    final_weight NUMERIC(10, 4) NOT NULL,     -- وزن نهایی بر اساس عیار 23.88
-    usd_rate NUMERIC(15, 2) NOT NULL,         -- نرخ به دالر (محاسبه نهایی قیمت)
-    
-    -- فیلدهای زمان‌بندی:
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- تاریخ ایجاد رکورد
-    analysis_date DATE NOT NULL DEFAULT CURRENT_DATE                -- تاریخ تحلیل (برای فیلترینگ)
-);
-
--- Index برای فیلترینگ تاریخ:
-CREATE INDEX idx_gold_analysis_date ON gold_analysis (analysis_date);
-
-
--- روزنامچه
-
--- جدول: money_ledger
-CREATE TABLE money_ledger (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    transaction_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- تاریخ و زمان ثبت
-    
-    -- ستون‌های ورودی
-    description TEXT NOT NULL,          -- تفصیل (مانند "گرفت احمد توسط مدیرش")
-    received NUMERIC(15, 2) DEFAULT 0,  -- رسیدها (دخلی)
-    paid NUMERIC(15, 2) DEFAULT 0,      -- گرفت‌ها (خرجی)
-    
-    -- ستون محاسبه شده
-    balance NUMERIC(15, 2) NOT NULL     -- بیلانس لحظه‌ای بعد از این تراکنش
-);
-
--- Index برای فیلترینگ تاریخ و عملکرد:
-CREATE INDEX idx_money_date ON money_ledger (transaction_date);
-
-
--- جدول: gold_ledger
-CREATE TABLE gold_ledger (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    transaction_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- تاریخ و زمان ثبت
-    
-    -- ستون‌های ورودی
-    description TEXT NOT NULL,          -- تفصیل
-    received NUMERIC(10, 4) DEFAULT 0,  -- رسیدهای طلا (به گرم)
-    paid NUMERIC(10, 4) DEFAULT 0,      -- گرفت‌های طلا (به گرم)
-    
-    -- فیلد تخصصی طلا
-    heel_purity_carat NUMERIC(5, 3),    -- عیار پاشنه (مثلاً 23.88 یا 18)
-    
-    -- ستون محاسبه شده
-    balance NUMERIC(10, 4) NOT NULL     -- بیلانس لحظه‌ای طلا (به گرم)
-);
-
--- Index برای فیلترینگ تاریخ و عملکرد:
-CREATE INDEX idx_gold_date ON gold_ledger (transaction_date);
-
--- جدول دخل ها
--- جدول: capital_records
-CREATE TABLE capital_records (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,    -- شناسه یکتا
-    usd_capital NUMERIC(15, 2) NOT NULL,     -- مقدار سرمایه به دالر
-    gold_capital NUMERIC(10, 4) NOT NULL,    -- مقدار سرمایه به طلا (توله یا گرام)
-    date DATE NOT NULL DEFAULT CURRENT_DATE  -- تاریخ ثبت سرمایه
-);
-
--- ایندکس برای جستجوی سریع‌تر بر اساس تاریخ
-CREATE INDEX idx_capital_records_date ON capital_records (date);
-
-
-
-
-CREATE TABLE notifications (
-    notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE user_profiles (
-    profile_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
-    picture_url TEXT, -- می‌تواند مسیر فایل یا URL باشد
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE shop_assets (
-    asset_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL, -- "logo" or "banner"
-    file_url TEXT NOT NULL,
-    uploaded_by INTEGER,
-    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(uploaded_by) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE activations (
-    activation_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    motherboard_code TEXT NOT NULL,
-    CPU_code  TEXT NOT NULL,
-    HDD_code  TEXT NOT NULL,
-    MAC_code  TEXT NOT NULL,
-    activation_code TEXT,
-    is_active BOOLEAN DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);

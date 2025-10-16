@@ -301,7 +301,7 @@ export default function Transactions() {
 
     return transactions.filter(txn => {
       const txnDate = new Date(txn.date);
-      const txnTimestamp = txnDate.getTime() + (12 * 60 * 60 * 1000);
+      const txnTimestamp = txnDate.getTime() + (4.5 * 60 * 60 * 1000);
       return txnTimestamp >= startTimestamp && txnTimestamp <= endTimestamp;
     });
   }, [transactions, selectedRange, customStartDate, customEndDate]);

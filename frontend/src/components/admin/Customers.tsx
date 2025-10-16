@@ -332,7 +332,9 @@ const handleSelectCustomer = async (customer: Customer) => {
                   <td className="p-2 text-gray-800">{c.phone}</td>
                   <td className="p-2 text-gray-800">{c.address}</td>
                   <td className="p-2 text-gray-800">
-                    {new Date(c.created_at).toLocaleDateString()}
+                    
+                    {moment(c.created_at).format('jYYYY/jMM/jDD HH:mm')}
+
                   </td>
                   <td className="p-2">
                     <button
@@ -443,7 +445,7 @@ const handleSelectCustomer = async (customer: Customer) => {
                   <tbody>
                     {transactions.map((t) => (
                       <tr key={t.txn_id} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="p-2 text-gray-800">{new Date(t.date).toLocaleDateString()}</td>
+                        <td className="p-2 text-gray-800">{moment(t.date).format('jYYYY/jMM/jDD HH:mm')}</td>
                         <td className="p-2 text-gray-800">{t.type}</td>
                         <td className="p-2 text-gray-800">{t.weight ? t.weight.toFixed(3) : '-'}</td>
                         <td className="p-2 text-gray-800">{t.source_carat ? t.source_carat.toFixed(3) : '-'}</td>

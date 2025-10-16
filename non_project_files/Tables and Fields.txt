@@ -82,8 +82,7 @@ CREATE TABLE gold_rates (
 CREATE TABLE transactions (
     txn_id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,
-    gold_type_id INTEGER NOT NULL,
-    type TEXT CHECK(type IN ('buy','sell')) NOT NULL,     -- نوع معامله
+     type TEXT CHECK(type IN ('buy','sell')) NOT NULL,     -- نوع معامله
     dollar_balance REAL DEFAULT 0,                        -- بیلانس دالر
     dollar_in REAL DEFAULT 0,                             -- جمع دالر (ورودی)
     dollar_out REAL DEFAULT 0,                            -- باقی یا خرج دالر
@@ -94,7 +93,7 @@ CREATE TABLE transactions (
     date TEXT NOT NULL,                                   -- تاریخ (مثلاً 1404-04-16)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
-    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id) ON DELETE CASCADE
+   
 );
 
 
