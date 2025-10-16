@@ -16,7 +16,7 @@ export default function CustomerProfile() {
   if (!customer) return <p>در حال بارگیری...</p>;
 
   return (
-    <div className="p-4 text-white">
+    <div className="bg-white p-4 text-gold">
       <h1 className="text-xl font-bold">پروفایل مشتری</h1>
       <p>نام: {customer.full_name}</p>
       <p>شماره تماس: {customer.phone}</p>

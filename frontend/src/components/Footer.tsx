@@ -11,7 +11,7 @@ export default function Footer() {
                 {/* 1. بخش کپی‌رایت و سازنده */}
                 <div className="flex flex-col text-center md:text-right space-y-1">
                     <span className="text-lg font-bold text-yellow-500">
-                        شرکت سازنده: BrainBridge@2025
+                        شبکه سازنده: BrainBridge@2025
                     </span>
                     <span className="text-sm text-gray-400">
                         تمامی حقوق نرم‌افزار محفوظ است.
