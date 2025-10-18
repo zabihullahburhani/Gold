@@ -1,330 +1,0 @@
-توضیحات و اهداف ما در پروژه:
-طرح کلی پروژه: سیستم مدیریت طلا برای عمده‌فروشی
-1. 🎯 اهداف پروژه
-دیجیتالی‌سازی عملیات خرید و فروش طلا
-
-ثبت دقیق تراکنش‌ها، مصارفات، و موجودی
-
-ارائه گزارش‌های مالی و تحلیلی
-
-پشتیبانی از چند واحد پولی (دالر، افغانی)
-
-مدیریت کاربران، نقش‌ها، و دسترسی‌ها
-
-2. 🧱 ساختار فنی
-بخش	تکنولوژی پیشنهادی
-فرانت‌اند	Next.js + Tailwind CSS
-بک‌اند	FastAPI (Python)
-دیتابیس	sqlite3
-احراز هویت	JWT 
-دیپلوی	Vercel (فرانت) + Render یا Railway (بک‌اند)
-3. 📦 ماژول‌های اصلی
-✅ مدیریت تراکنش‌ها
-ثبت خرید و فروش طلا
-
-محاسبه قیمت بر اساس وزن و نرخ روز
-
-نمایش به دالر و افغانی
-
-✅ مدیریت مصارفات
-ثبت مصارف روزانه، ماهانه، و سالانه
-
-دسته‌بندی مصارف (کرایه، معاش، برق و غیره)
-
-✅ موجودی و توازن
-نمایش موجودی فعلی طلا و پول نقد
-
-محاسبه سود و زیان
-
-✅ گزارش‌ها و نمودارها
-گزارش‌های مالی قابل فیلتر بر اساس تاریخ
-
-نمودار تغییرات نرخ طلا
-
-گزارش عملکرد فروشنده‌ها
-
-✅ مدیریت کاربران و نقش‌ها
-تعریف نقش‌ها (ادمین، فروشنده، حسابدار)
-
-محدودسازی دسترسی بر اساس نقش
-
-4. 💡 امکانات پیشنهادی برای آینده
-اتصال به API نرخ جهانی طلا برای بروزرسانی خودکار
-
-سیستم هشدار نوسان نرخ طلا
-
-اپلیکیشن موبایل برای فروشنده‌ها
-
-پشتیبانی از چند زبان (دری، پشتو، انگلیسی)
-
-5. 📊 طراحی رابط کاربری (UI/UX)
-داشبورد مرکزی با خلاصه وضعیت
-
-فرم‌های ساده و سریع برای ثبت تراکنش
-
-جداول قابل فیلتر و جستجو
-
-حالت تاریک (Dark Mode) برای راحتی چشم
-
-مشوره و ایده برای توسعه پروژه
-💡 ایده: سیستم هشدار نوسان نرخ طلا
-با توجه به اینکه نرخ طلا متغیر است، می‌تونید یک ماژول اضافه کنید که:
-
-نوسانات نرخ طلا را بررسی کند (مثلاً هر ساعت)
-
-اگر تغییر شدید بود، نوتیفیکیشن برای ادمین یا یوزر ارسال کند
-
-حتی می‌تونید نمودار تغییرات نرخ طلا را در داشبورد نمایش دهید
-
-💡 مشوره: افزودن گزارش‌های تحلیلی
-در بخش گزارشات، می‌تونید از داده‌های تراکنش‌ها، مصارفات، و موجودی استفاده کنید تا:
-
-سود و زیان ماهانه محاسبه شود
-
-مشتریان فعال و غیرفعال شناسایی شوند
-
-عملکرد کارمندان بررسی شود
-
-
-تکنالوژی های فرانت اند: Next.js, tsx
-جزئیات ساختار: به ساختار فرانت اند مراجعه شود
-GJBMS Project
-├── frontend
-│   ├── .next
-│   ├── node_modules
-│   ├── public
-│   │   ├── icons
-│   │   ├── webfonts
-│   │   └── logo.png
-│   ├── src
-│   │   ├── app
-│   │   │   ├── admin
-│   │   │   │   └── page.tsx
-│   │   │   ├── login
-│   │   │   │   └── page.tsx
-│   │   │   ├── user
-│   │   │   │   └── page.tsx
-│   │   │   ├── favicon.ico
-│   │   │   ├── globals.css
-│   │   │   ├── layout.tsx
-│   │   │   └── page.tsx
-│   │   ├── components
-│   │   │   ├── admin
-│   │   │   │   ├── ui
-│   │   │   │   │   └── card.tsx
-│   │   │   │   ├── Dashboard.tsx
-│   │   │   │   ├── AdminCard.tsx
-│   │   │   │   ├── AppActivation.tsx
-│   │   │   │   ├── CreateUser.tsx
-│   │   │   │   ├── Customers.tsx
-│   │   │   │   ├── DatabaseSettings.tsx
-│   │   │   │   ├── Employees.tsx
-│   │   │   │   ├── GolPrices.tsx
-│   │   │   │   ├── GoldRateDifference.tsx
-│   │   │   │   ├── Logout.tsx
-│   │   │   │   ├── Reports.tsx
-│   │   │   │   ├── Settings.tsx
-│   │   │   │   ├── ShopExpenses.tsx
-│   │   │   │   ├── Transcations.tsx
-│   │   │   │   └── UserProfile.tsx
-│   │   │   ├── shared
-│   │   │   │   ├── notification
-│   │   │   │   │   └── [id].tsx
-│   │   │   │   ├── BalanceDisplay.tsx
-│   │   │   │   ├── Modal.tsx
-│   │   │   │   ├── Notifications.tsx
-│   │   │   │   ├── Topbar.tsx
-│   │   │   │   └── UserProfile.tsx
-│   │   │   ├── user
-│   │   │   │   ├── Dashboard.tsx
-│   │   │   │   ├── Customers.tsx
-│   │   │   │   ├── Employees.tsx
-│   │   │   │   ├── GolPrices.tsx
-│   │   │   │   ├── GoldRateDifference.tsx
-│   │   │   │   ├── Logout.tsx
-│   │   │   │   ├── Settings.tsx
-│   │   │   │   ├── ShopExpenses.tsx
-│   │   │   │   ├── Transcations.tsx
-│   │   │   │   └── UserProfile.tsx
-│   │   ├── services
-│   │   │   └── employees_api.ts
-│   │   │   └── customers_api.ts
-│   │   │   └── transactions_api.ts
-│   │   │   └── goldratedifference_api.ts
-│   │   │   └── shopexpenses_api.ts
-│   │   │   └── *_api.ts
-│   │   └── utils
-│   │       └── helpers.ts
-│   ├── .env.local
-│   ├── eslint.config.mjs
-│   ├── package.json
-│   ├── postcss.config.js
-│   ├── tailwind.config.js
-│   └── tsconfig.json
-
-صفحه لاگین، صفحه ادمین و صفحه یوزر داریم
-رنگ عقب مشکی و رنگ متن طلایی است
-هدر (سرچ و دکمه سرچ، لوگو، شرکت سازنده، نوتیفیکشن ها، و اسم و عکس یوزر لاگین شده، خروج) و فوتر (بسیار معیاری) و سایدبار (قابل انتقال به هر طرف و تغیر به صورت افقی و عمودی)
-در دشبور ادمین و یوزر یک سری از داده ها و اطلاعات بصورت گرافیکی نمودار ها و جداول و لیست ها از دیتابیس و یاهم بصورت آنلاین نمایش داده میشوند.
-در این جا http://localhost:3000/admin کامپوننت های ذیل را داریم:
-دشبورد، مدیریت مشتریان، مدیریت کارمندان، قیمت طلا، مدیریت معاملات (تراکنش ها)، مدیریت گزارشات، مصارفات دوکان، تفاوت نرخ طلا، فعال سازی برنامه، تنظیمات دیتابیس، تنظیمات عمومی، خروج
-در اینجا http://localhost:3000/user کامپوننت های ذیل را داریم:
-دشبورد، مدیریت مشتریان،  قیمت طلا، مدیریت معاملات (تراکنش ها)، مصارفات دوکان، تفاوت نرخ طلا، تنظیمات (عکس و مشخصات پروفایل خودی یوزر)، خروج
-بک اند: FastAPI, python
-ساختار مراجعه شود
-backend/
-├── app/
-│   ├── api/
-│   │   └── v1/
-│   │       ├── auth.py          # مسیرهای احراز هویت: login، ثبت‌نام، توکن JWT
-│   │       └── users.py         # مسیرهای مدیریت کاربران: CRUD، تغییر نقش، پروفایل و عکس
-│   │       └── customers.py     # مسیرهای مدیریت مشتریان
-│   │       └── transactions.py  # مسیرهای تراکنش‌ها
-│   │       └── shop.py          # مسیرهای گزارشات، مصارف دوکان، موجودی، طلا
-│   │       └── notifications.py # مسیرهای نوتفیکیشن‌ها
-│
-│   ├── core/
-│   │   ├── config.py            # تنظیمات عمومی (env, secret keys, DB URL)
-│   │   ├── database.py          # اتصال به SQLite / SessionLocal / Base
-│   │   └── security.py          # JWT Token، Hashing پسورد، get_current_user
-│
-│   ├── crud/
-│   │   ├── user.py              # CRUD کارمندان و login
-│   │   ├── customer.py          # CRUD مشتریان
-│   │   ├── transaction.py       # CRUD تراکنش‌ها
-│   │   ├── shop.py              # CRUD موجودی، مصارف، طلا
-│   │   └── notification.py      # CRUD نوتفیکیشن‌ها
-│
-│   ├── models/
-│   │   ├── user.py              # Employee + Login
-│   │   ├── customer.py          # Customer
-│   │   ├── transaction.py       # Transaction
-│   │   ├── shop.py              # ShopExpenses, ShopBalance, GoldTypes, GoldRates, ShopAssets
-│   │   └── notification.py      # Notifications, UserProfiles
-│
-│   ├── schemas/
-│   │   ├── user.py              # Pydantic: EmployeeCreate, EmployeeOut, EmployeeUpdate, Login schemas
-│   │   ├── customer.py          # Customer schemas
-│   │   ├── transaction.py       # Transaction schemas
-│   │   ├── shop.py              # Shop-related schemas
-│   │   └── notification.py      # Notification schemas
-│
-│   └── main.py                  # FastAPI app: include_router برای تمام مسیرها، middleware و startup events
-│
-├── alembic/                      # Migration دیتابیس
-├── alembic.ini
-├── requirements.txt
-└── .env
-
-دیتابیس: sqlite3
-به جداول و ساختار دیتابیس مراجعه شود
-backend/backend.db
-
-CREATE TABLE employees (
-        employee_id INTEGER NOT NULL,
-        full_name VARCHAR NOT NULL,
-        role VARCHAR NOT NULL,
-        phone VARCHAR,
-        created_at DATETIME, profile_pic TEXT,
-        PRIMARY KEY (employee_id)
-);
-
-CREATE INDEX ix_employees_employee_id ON employees (employee_id);
-CREATE TABLE logins (
-        login_id INTEGER NOT NULL,
-        employee_id INTEGER,
-        username VARCHAR NOT NULL,
-        password_hash VARCHAR NOT NULL,
-        last_login DATETIME,
-        PRIMARY KEY (login_id),
-        FOREIGN KEY(employee_id) REFERENCES employees (employee_id)
-);
-
-CREATE UNIQUE INDEX ix_logins_username ON logins (username);
-CREATE INDEX ix_logins_login_id ON logins (login_id);
-CREATE TABLE customers (
-    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name TEXT NOT NULL,
-    phone TEXT,
-    address TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE sqlite_sequence(name,seq);
-CREATE TABLE shop_expenses (
-    expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    expense_type TEXT NOT NULL,
-    amount REAL NOT NULL,
-    expense_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    description TEXT,
-    employee_id INTEGER,
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE shop_balance (
-    balance_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    gold_balance_grams REAL DEFAULT 0,
-    cash_balance_usd REAL DEFAULT 0,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE gold_types (
-    gold_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT
-);
-
-CREATE TABLE gold_rates (
-    rate_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    gold_type_id INTEGER NOT NULL,
-    rate_per_gram REAL NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id)
-);
-
-CREATE TABLE transactions (
-    txn_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    customer_id INTEGER NOT NULL,
-    employee_id INTEGER NOT NULL,
-    gold_type_id INTEGER NOT NULL,
-    grams REAL NOT NULL,
-    rate_per_gram REAL NOT NULL,
-    total_usd REAL NOT NULL,
-    txn_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    notes TEXT,
-    FOREIGN KEY(customer_id) REFERENCES customers(customer_id),
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id),
-    FOREIGN KEY(gold_type_id) REFERENCES gold_types(gold_type_id)
-);
-
-CREATE TABLE notifications (
-    notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE user_profiles (
-    profile_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
-    picture_url TEXT, -- می‌تواند مسیر فایل یا URL باشد
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
-);
-
-CREATE TABLE shop_assets (
-    asset_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL, -- "logo" or "banner"
-    file_url TEXT NOT NULL,
-    uploaded_by INTEGER,
-    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(uploaded_by) REFERENCES employees(employee_id)
-);
---------
-در کل اسکلیت فرانت اند و دیتابیس تکمیل شده است و در صورت نیاز تغیرات میاوریم
-مدیریت کارمندان به درستی هم فرانت اند وهم در بک اند فعال است و کار میکند
-و متباقی کامپوننت ها را کار باید کنیم (کد نویسی کنیم)
-

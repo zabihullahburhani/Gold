@@ -34,7 +34,7 @@ export default function KahataBalance({ transactions, capitals, selectedRange, c
 
   return (
     <Card className="bg-gray-800 border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-200">
-      <CardHeader className="text-xl font-semibold text-yellow-500">🏦 موجودی کل</CardHeader>
+      <CardHeader className="text-xl font-semibold text-red-500">🏦  خلاصه </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-4 bg-gray-700 rounded-lg">
           <p className="text-sm text-gray-300">کل دالر</p>
